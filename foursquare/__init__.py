@@ -10,7 +10,7 @@ except ImportError:
 
 import contextlib
 import httplib
-import random
+import re
 import time
 import urllib
 import urllib2
@@ -39,10 +39,7 @@ NUM_REQUEST_RETRIES = 3
 
 class FoursquareException(Exception):
     """Generic foursquare exception"""
-    def __init__(self, msg):
-        self.msg = msg
-    def __str__(self):
-        return u'<{cls}> [{msg}]'.format(cls=self.__class__.__name__, msg=self.msg)
+    pass
 
 class UnauthorizedException(FoursquareException):
     """Your authentication credentials were invalid"""
@@ -53,17 +50,23 @@ class BadRequestException(FoursquareException):
     pass
 
 
+# Regular expressions for processing
+re_charset = re.compile(r'(?<=charset\=)(\w*)')
+
 class Foursquare(object):
     """foursquare V2 API wrapper"""
 
     def __init__(self, client_id, client_secret, token=None):
         """Sets up the api object"""
         self.requester = self.Requester(client_id, client_secret, token)
-        self.users = self.Users(self.requester.request)
-        self.venues = self.Venues(self.requester.request)
-        self.checkins = self.Checkins(self.requester.request)
+        self.users = self.Users(self.requester)
+        self.venues = self.Venues(self.requester)
+        self.checkins = self.Checkins(self.requester)
 
 
+    """
+    AUTHENTICATOR IS UNTESTED!
+    """
     class Authenticator(object):
         """Handles authentication procedures and helps retrieve tokens"""
         def auth_url(self, redirect_url, mobile=False):
@@ -110,35 +113,28 @@ class Foursquare(object):
             self.oauth_token = token
             self.userless = not bool(token)
 
-        def GET(self, url, params={}):
+        def GET(self, path, params={}):
             """GET request that returns processed data"""
-            pass
+            self._imbue_params(params)
+            url = u'{API_ENDPOINT}{path}?{params}'.format(
+                API_ENDPOINT=API_ENDPOINT,
+                path=path,
+                params=urllib.urlencode(params)
+            )
+            return self._request(url)
 
-        def POST(self, url, params={}):
+        def POST(self, path, params={}):
             """POST request that returns processed data"""
-            pass
+            self._imbue_params(params)
+            url = u'{API_ENDPOINT}{path}'.format(
+                API_ENDPOINT=API_ENDPOINT,
+                path=path
+            )
+            data = urllib.urlencode(params)
+            return self._request(url, data)
 
-        def request(self, url, params={}):
-            """Performs the passed request and returns meaningful data"""
-            url = self.__build_url(url, params)
-            log.debug(u'Requesting url: {url}'.format(url=url))
-            data = self.__request_with_retry(url)
-            if not data:
-                raise BadRequestException(u'Bad url: {url}'.format(url=url))
-            response = None
-            try:
-                result = json.loads(data)
-                if 'meta' not in result:
-                    raise ValueError(u'Got an invalid response')
-                if result['meta'].get('code') != 200:
-                    raise ValueError(result['meta'].get('errorDetail'))
-                response = result['response']
-            except NameError, e:
-                log.error(e)
-            return response
-
-        def __build_url(self, url, params):
-            """Build the url endpoint to query"""
+        def _imbue_params(self, params):
+            """Enrich the params dict"""
             params.update({'v': API_VERSION})
             if self.userless:
                 params.update({
@@ -147,57 +143,76 @@ class Foursquare(object):
             else:
                 params.update({
                     'oauth_token': self.oauth_token})
-            return u'{API_ENDPOINT}{url}?{params}'.format(
-                API_ENDPOINT=API_ENDPOINT,
-                url=url,
-                params=urllib.urlencode(params))
+            return params
 
-        def __request_with_retry(self, url):
+        def _request(self, url, data=None):
+            """Performs the passed request and returns meaningful data"""
+            response = self._request_with_retry(url, data)
+            if not response:
+                raise BadRequestException(u'Bad url: {url}'.format(url=url))
+            return self._process_response(response)
+
+        def _request_with_retry(self, url, data=None):
             """Tries to load data from an endpoint using retries"""
+            log.debug(u'Requesting url: {url} * {data}'.format(url=url, data=data))
             for i in xrange(NUM_REQUEST_RETRIES):
                 try:
-                    with contextlib.closing(urllib2.urlopen(url)) as request:
+                    with contextlib.closing(urllib2.urlopen(url, data)) as request:
                         content_type = request.headers.get('content-type')
-                        if content_type and 'charset=' in content_type:
-                            encoding = content_type.split('charset=')[-1]
-                        else:
-                            encoding = 'utf-8'
+                        encoding = 'utf-8'
+                        if content_type:
+                            match_encoding = re_charset.search(content_type)
+                            if match_encoding:
+                                encoding = match_encoding.group()
                         return unicode(request.read(), encoding)
                 except urllib2.HTTPError, e:
                     # Failed. Log and retry in up to 1 sec
                     log.warning(e)
                     if e.code == 401:
-                        raise UnauthorizedException(str(e))
+                        raise UnauthorizedException(unicode(e))
                 except httplib.BadStatusLine, e:
+                    # What condition causes this?
                     log.warning(e)
-                time.sleep(random.random())
+                time.sleep(1)
             return None
+
+        def _process_response(self, response):
+            """Process the response returned by foursquare"""
+            data = json.loads(response)
+            if 'meta' not in data:
+                raise ValueError(u'Invalid response!')
+            if data['meta'].get('code') != 200:
+                raise ValueError(data['meta'].get('errorDetail'))
+            return data['response']
+
 
 
     class Endpoint(object):
         """Generic endpoint class"""
-        def __init__(self, request_func):
+        def __init__(self, requester):
             """Stores the request function for retrieving data"""
-            self.request = request_func
+            self.GET = requester.GET
+            self.POST = requester.POST
+
 
 
     class Users(Endpoint):
         """User specific endpoint"""
         def __call__(self, USER_ID=u'self'):
-            """https://developer.foursquare.com/docs/users/users.html
+            """ GET: https://developer.foursquare.com/docs/users/users.html
             Returns profile information for a given user, including selected badges and mayorships. 
             """
-            return self.request(u'/users/{USER_ID}'.format(USER_ID=USER_ID))
+            return self.GET(u'/users/{USER_ID}'.format(USER_ID=USER_ID))
 
         def leaderboard(self, params={}):
-            """https://api.foursquare.com/v2/users/leaderboard
+            """ GET: https://api.foursquare.com/v2/users/leaderboard
             Returns the user's leaderboard.
                 @neighbors : Number of friends' scores to return that are adjacent to your score, in ranked order.
             """
-            return self.request(u'/users/leaderboard', params)
+            return self.GET(u'/users/leaderboard', params)
 
         def search(self, params={}):
-            """https://api.foursquare.com/v2/users/search
+            """ GET: https://api.foursquare.com/v2/users/search
             Helps a user locate friends.
                 @phone : A comma-delimited list of phone numbers to look for.
                 @email : A comma-delimited list of email addresses to look for.
@@ -206,23 +221,23 @@ class Foursquare(object):
                 @fbid : A comma-delimited list of Facebook ID's to look for.
                 @name : A single string to search for in users' names.
             """
-            return self.request(u'/users/search', params)
+            return self.GET(u'/users/search', params)
 
         def requests(self):
-            """https://api.foursquare.com/v2/users/requests
+            """ GET: https://api.foursquare.com/v2/users/requests
             Shows a user the list of users with whom they have a pending friend request
             (i.e., someone tried to add the acting user as a friend, but the acting user has not accepted).
             """
-            return self.request(u'/users/requests')
+            return self.GET(u'/users/requests')
 
         def badges(self, USER_ID=u'self'):
-            """https://api.foursquare.com/v2/users/USER_ID/badges
+            """ GET: https://api.foursquare.com/v2/users/USER_ID/badges
             Returns badges for a given user.
             """
-            return self.request(u'/users/{USER_ID}/badges'.format(USER_ID=USER_ID))
+            return self.GET(u'/users/{USER_ID}/badges'.format(USER_ID=USER_ID))
 
         def checkins(self, USER_ID=u'self', params={}):
-            """https://api.foursquare.com/v2/users/USER_ID/checkins
+            """ GET: https://api.foursquare.com/v2/users/USER_ID/checkins
             Returns a history of checkins for the authenticated user.
             Currently only 'self' is supported for USER_ID.
                 @limit : Number of results to return, up to 250.
@@ -230,10 +245,10 @@ class Foursquare(object):
                 @afterTimestamp : Retrieve the first results to follow these seconds since epoch.
                 @beforeTimestamp : Retrieve the first results prior to these seconds since epoch.
             """
-            return self.request(u'/users/{USER_ID}/checkins'.format(USER_ID=USER_ID), params)
+            return self.GET(u'/users/{USER_ID}/checkins'.format(USER_ID=USER_ID), params)
 
         def all_checkins(self):
-            """Utility function. Gets every checkin this user has ever made"""
+            """Utility function: Get every checkin this user has ever made"""
             offset = 0
             while(True):
                 checkins = self.checkins(params={'limit': 250, 'offset': offset})
@@ -247,58 +262,59 @@ class Foursquare(object):
                     break
 
         def friends(self, USER_ID=u'self', params={}):
-            """https://api.foursquare.com/v2/users/USER_ID/friends
+            """ GET: https://api.foursquare.com/v2/users/USER_ID/friends
             Returns an array of a user's friends.
                 @limit : Number of results to return, up to 500.
                 @offset : Used to page through results.
             """
-            return self.request(u'/users/{USER_ID}/friends'.format(USER_ID=USER_ID), params)
+            return self.GET(u'/users/{USER_ID}/friends'.format(USER_ID=USER_ID), params)
 
         def tips(self, USER_ID=u'self', params={}):
-            """https://api.foursquare.com/v2/users/USER_ID/tips
+            """ GET: https://api.foursquare.com/v2/users/USER_ID/tips
             Returns tips from a user.
                 @sort : One of recent, nearby, or popular. Nearby requires geolat and geolong to be provided.
                 @ll : Latitude and longitude of the user's location. (comma separated)
                 @limit : Number of results to return, up to 500.
                 @offset : Used to page through results.
             """
-            return self.request(u'/users/{USER_ID}/tips'.format(USER_ID=USER_ID), params)
+            return self.GET(u'/users/{USER_ID}/tips'.format(USER_ID=USER_ID), params)
 
         def todos(self, USER_ID=u'self', params={}):
-            """https://api.foursquare.com/v2/users/USER_ID/todos
+            """ GET: https://api.foursquare.com/v2/users/USER_ID/todos
             Returns todos from a user.
                 @sort : One of recent or popular. Nearby requires geolat and geolong to be provided.
                 @ll : Latitude and longitude of the user's location. (comma separated)
             """
-            return self.request(u'/users/{USER_ID}/todos'.format(USER_ID=USER_ID), params)
+            return self.GET(u'/users/{USER_ID}/todos'.format(USER_ID=USER_ID), params)
 
         def venuehistory(self, USER_ID=u'self', params={}):
-            """https://api.foursquare.com/v2/users/USER_ID/venuehistory
+            """ GET: https://api.foursquare.com/v2/users/USER_ID/venuehistory
             Returns a list of all venues visited by the specified user, along with how many visits and when they were last there.
             Currently only 'self' is supported for USER_ID.
                 @afterTimestamp : Retrieve the first results to follow these seconds since epoch.
                 @beforeTimestamp : Retrieve the first results prior to these seconds since epoch.
             """
-            return self.request(u'/users/{USER_ID}/venuehistory'.format(USER_ID=USER_ID), params)
+            return self.GET(u'/users/{USER_ID}/venuehistory'.format(USER_ID=USER_ID), params)
+
 
 
     class Venues(Endpoint):
         """Venue specific endpoint"""
         def __call__(self, VENUE_ID):
-            """https://api.foursquare.com/v2/venues/VENUE_ID
+            """ GET: https://api.foursquare.com/v2/venues/VENUE_ID
             Gives details about a venue, including location, mayorship, tags, tips, specials, and category.
             Authenticated users will also receive information about who is here now.
             """
-            return self.request(u'/venues/{VENUE_ID}'.format(VENUE_ID=VENUE_ID))
+            return self.GET(u'/venues/{VENUE_ID}'.format(VENUE_ID=VENUE_ID))
 
         def categories(self):
-            """https://api.foursquare.com/v2/venues/categories
+            """ GET: https://api.foursquare.com/v2/venues/categories
             Returns a hierarchical list of categories applied to venues. By default, top-level categories do not have IDs.
             """
-            return self.request(u'/venues/categories')
+            return self.GET(u'/venues/categories')
 
         def explore(self, params):
-            """https://api.foursquare.com/v2/venues/explore
+            """ GET: https://api.foursquare.com/v2/venues/explore
             Returns a list of recommended venues near the current location.
                 @ll : [required] Latitude and longitude of the user's location, so response can include distance.
                 @llAcc : Accuracy of latitude and longitude, in meters.
@@ -312,10 +328,10 @@ class Foursquare(object):
                 @basis : If present and set to friends or me, limits results to only places
                          where friends have visited or user has visited, respectively.
             """
-            return self.request(u'/venues/explore', params)
+            return self.GET(u'/venues/explore', params)
 
         def search(self, params):
-            """https://api.foursquare.com/v2/venues/search
+            """ GET: https://api.foursquare.com/v2/venues/search
             Returns a list of venues near the current location, optionally matching the search term.
                 @ll : [required] Latitude and longitude of the user's location, so response can include distance.
                 @llAcc : Accuracy of latitude and longitude, in meters. (Does not currently affect search results.)
@@ -329,38 +345,38 @@ class Foursquare(object):
                 @providerId : Identifier for a known third party that is part of our map of venues to URLs, used in conjunction with linkedId.
                 @linkedId : Identifier used by third party specifed in providerId, which we will attempt to match against our map of venues to URLs.
             """
-            return self.request(u'/venues/search', params)
+            return self.GET(u'/venues/search', params)
 
         def trending(self, params):
-            """https://api.foursquare.com/v2/venues/trending
+            """ GET: https://api.foursquare.com/v2/venues/trending
             Returns a list of venues near the current location with the most people currently checked in.
                 @ll : [required] Latitude and longitude of the user's location.
                 @limit : Number of results to return, up to 50.
                 @radius : Radius in meters, up to approximately 2000 meters.
             """
-            return self.request(u'/venues/trending', params)
+            return self.GET(u'/venues/trending', params)
 
         def herenow(self, VENUE_ID, params={}):
-            """https://api.foursquare.com/v2/venues/VENUE_ID/herenow
+            """ GET: https://api.foursquare.com/v2/venues/VENUE_ID/herenow
             Provides a count of how many people are at a given venue.
             If the request is user authenticated, also returns a list of the users there, friends-first.
                 @limit : Number of results to return, up to 500.
                 @offset : Used to page through results.
                 @afterTimestamp : Retrieve the first results to follow these seconds since epoch.
             """
-            return self.request(u'/venues/{VENUE_ID}/herenow'.format(VENUE_ID=VENUE_ID), params)
+            return self.GET(u'/venues/{VENUE_ID}/herenow'.format(VENUE_ID=VENUE_ID), params)
 
         def tips(self, VENUE_ID, params={}):
-            """https://api.foursquare.com/v2/venues/VENUE_ID/tips
+            """ GET: https://api.foursquare.com/v2/venues/VENUE_ID/tips
             Returns tips for a venue.
                 @sort : One of recent or popular.
                 @limit : Number of results to return, up to 500.
                 @offset : Used to page through results.
             """
-            return self.request(u'/venues/{VENUE_ID}/tips'.format(VENUE_ID=VENUE_ID), params)
+            return self.GET(u'/venues/{VENUE_ID}/tips'.format(VENUE_ID=VENUE_ID), params)
 
         def photos(self, VENUE_ID, params={}):
-            """https://api.foursquare.com/v2/venues/VENUE_ID/photos
+            """ GET: https://api.foursquare.com/v2/venues/VENUE_ID/photos
             Returns photos for a venue.
                 @group : Pass checkin for photos added by friends on their recent checkins.
                          Pass venue for public photos added to the venue by anyone.
@@ -368,45 +384,61 @@ class Foursquare(object):
                 @limit : Number of results to return, up to 500.
                 @offset : Used to page through results.
             """
-            return self.request(u'/venues/{VENUE_ID}/photos'.format(VENUE_ID=VENUE_ID), params)
+            return self.GET(u'/venues/{VENUE_ID}/photos'.format(VENUE_ID=VENUE_ID), params)
 
         def links(self, VENUE_ID):
-            """https://api.foursquare.com/v2/venues/VENUE_ID/links
+            """ GET: https://api.foursquare.com/v2/venues/VENUE_ID/links
             Returns URLs or identifiers from third parties that have been applied to this venue.
             """
-            return self.request(u'/venues/{VENUE_ID}/links'.format(VENUE_ID=VENUE_ID))
+            return self.GET(u'/venues/{VENUE_ID}/links'.format(VENUE_ID=VENUE_ID))
+
 
 
     class Checkins(Endpoint):
         """Checkin specific endpoint"""
         def __call__(self, CHECKIN_ID, params={}):
-            """https://api.foursquare.com/v2/checkins/CHECKIN_ID
+            """ GET: https://api.foursquare.com/v2/checkins/CHECKIN_ID
             Get details of a checkin.
                 @signature : When checkins are sent to public feeds such as Twitter, foursquare appends
                              a signature (s=XXXXXX) allowing users to bypass the friends-only access check on checkins.
             """
-            return self.request(u'/checkins/{CHECKIN_ID}'.format(CHECKIN_ID=CHECKIN_ID), params)
+            return self.GET(u'/checkins/{CHECKIN_ID}'.format(CHECKIN_ID=CHECKIN_ID), params)
+
+        def add(self, params):
+            """ POST: https://api.foursquare.com/v2/checkins/add
+            Allows you to check in to a place.
+                @venueId: The venue where the user is checking in.
+                           No venueid is needed if shouting or just providing a venue name.
+                @venue: If are not shouting, but you don't have a venue ID or would rather prefer
+                         a 'venueless' checkin, pass the venue name as a string using this parameter.
+                @shout: A message about your check-in. The maximum length of this field is 140 characters.
+                @broadcast: Who to broadcast this check-in to. Accepts a comma-delimited list of
+                             values: private,public,facebook,twitter,followers
+                @ll : Latitude and longitude of the user's location.
+            """
+            return self.POST(u'/checkins/add', params)
 
         def recent(self, params={}):
-            """https://api.foursquare.com/v2/checkins/recent
+            """ GET: https://api.foursquare.com/v2/checkins/recent
             Returns a list of recent checkins from friends.
                 @ll : Latitude and longitude of the user's location, so response can include distance.
                 @limit : Number of results to return, up to 100.
                 @afterTimestamp : Seconds after which to look for checkins, e.g. for looking for new checkins since the last fetch.
             """
-            return self.request(u'/checkins/recent', params)
+            return self.GET(u'/checkins/recent', params)
+
 
 
     class Tips(Endpoint):
         """Tips specific endpoint"""
         def __call__(self, TIP_ID):
-            """https://api.foursquare.com/v2/tips/TIP_ID
+            """ GET: https://api.foursquare.com/v2/tips/TIP_ID
             Gives details about a tip, including which users (especially friends) have marked the tip to-do or done.
             """
-            return self.request(u'/tips/{TIP_ID}'.format(TIP_ID=TIP_ID))
+            return self.GET(u'/tips/{TIP_ID}'.format(TIP_ID=TIP_ID))
 
         def search(self, params):
-            """https://api.foursquare.com/v2/tips/search
+            """ GET: https://api.foursquare.com/v2/tips/search
             Returns a list of tips near the area specified.
                 @ll : [required] Latitude and longitude of the user's location.
                 @limit : Number of results to return, up to 500.
@@ -414,47 +446,41 @@ class Foursquare(object):
                 @filter : If set to friends, only show nearby tips from friends.
                 @query : Only find tips matching the given term, cannot be used in conjunction with friends filter.
             """
-            return self.request(u'/tips/search', params)
+            return self.GET(u'/tips/search', params)
+
 
 
     class Photos(Endpoint):
         """Photo specific endpoint"""
         def __call__(self, PHOTO_ID):
-            """https://api.foursquare.com/v2/photos/PHOTO_ID
+            """ GET: https://api.foursquare.com/v2/photos/PHOTO_ID
             Get details of a photo.
             """
-            return self.request(u'/photos/{PHOTO_ID}'.format(PHOTO_ID=PHOTO_ID))
+            return self.GET(u'/photos/{PHOTO_ID}'.format(PHOTO_ID=PHOTO_ID))
 
-
-    class Settings(Endpoint):
-        """Setting specific endpoint"""
-        def __call__(self):
-            """https://api.foursquare.com/v2/settings/all
-            Returns a setting for the acting user.
-            """
-            return self.request(u'/settings/all')
 
 
     class Settings(Endpoint):
         """Setting specific endpoint"""
         def __call__(self):
-            """https://api.foursquare.com/v2/settings/all
+            """ GET: https://api.foursquare.com/v2/settings/all
             Returns a setting for the acting user.
             """
-            return self.request(u'/settings/all')
+            return self.GET(u'/settings/all')
+
 
 
     class Specials(Endpoint):
         """Specials specific endpoint"""
         def __call__(self, SPECIAL_ID, params):
-            """https://api.foursquare.com/v2/specials/SPECIAL_ID
+            """ GET: https://api.foursquare.com/v2/specials/SPECIAL_ID
             Gives details about a special, including text and whether it is unlocked for the current user.
                 @venueId : [required] ID of a venue the special is running at
             """
-            return self.request(u'/specials/{SPECIAL_ID}'.format(SPECIAL_ID=SPECIAL_ID), params)
+            return self.GET(u'/specials/{SPECIAL_ID}'.format(SPECIAL_ID=SPECIAL_ID), params)
 
         def search(self, params):
-            """https://api.foursquare.com/v2/specials/search
+            """ GET: https://api.foursquare.com/v2/specials/search
             Returns a list of specials near the current location.
                 @ll : [required] Latitude and longitude to search near.
                 @llAcc : Accuracy of latitude and longitude, in meters.
@@ -462,4 +488,4 @@ class Foursquare(object):
                 @altAcc : Accuracy of the user's altitude, in meters.
                 @limit : Number of results to return, up to 50.
             """
-            return self.request(u'/specials/search', params)
+            return self.GET(u'/specials/search', params)
