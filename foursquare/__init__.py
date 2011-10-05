@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
-# (c) 2011 Mike Lewis, SpotOn, Inc.
+# (c) 2011 Mike Lewis
 import logging; log = logging.getLogger(__name__)
 
 try:
@@ -33,7 +33,7 @@ AUTH_ENDPOINT = u'https://foursquare.com/oauth2/authenticate'
 TOKEN_ENDPOINT = u'https://foursquare.com/oauth2/access_token'
 API_ENDPOINT = u'https://api.foursquare.com/v2'
 
-API_VERSION = u'20110910'
+API_VERSION = u'20111005'
 NUM_REQUEST_RETRIES = 3
 
 

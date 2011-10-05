@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
-# (c) 2011 Mike Lewis, SpotOn, Inc.
+# (c) 2011 Mike Lewis
 
 from setuptools import setup
 
@@ -23,7 +23,7 @@ setup(name=u'foursquare',
       keywords='foursquare',
       author='Mike Lewis',
       author_email='mike@fondu.com',
-      url='http://github.com/SpotOn/foursquare-python',
+      url='http://github.com/mLewisLogic/foursquare',
       license='MIT License',
       packages=['foursquare'],
       include_package_data=True,
