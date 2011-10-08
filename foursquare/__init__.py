@@ -167,7 +167,7 @@ class Foursquare(object):
                         return unicode(request.read(), encoding)
                 except urllib2.HTTPError, e:
                     # Failed. Log and retry in up to 1 sec
-                    log.warning(e)
+                    log.warning(u'{0}: {1}'.format(e, e.read()))
                     if e.code == 401:
                         raise UnauthorizedException(unicode(e))
                 except httplib.BadStatusLine, e:
@@ -306,6 +306,12 @@ class Foursquare(object):
             Authenticated users will also receive information about who is here now.
             """
             return self.GET(u'/venues/{VENUE_ID}'.format(VENUE_ID=VENUE_ID))
+
+        def add(self, params):
+            """ POST: https://api.foursquare.com/v2/venues/add
+            Allows users to add a new venue.
+            """
+            return self.POST(u'/venues/add', params)
 
         def categories(self):
             """ GET: https://api.foursquare.com/v2/venues/categories
