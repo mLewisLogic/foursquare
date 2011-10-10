@@ -18,6 +18,8 @@ import urlparse
 
 
 
+
+
 ERROR_TYPES = {
     'invalid_auth': u'OAuth token was not provided or was invalid.',
     'param_error': u'A required parameter was missing or a parameter was malformed. This is also used if the resource ID in the path is incorrect.',
@@ -25,7 +27,7 @@ ERROR_TYPES = {
     'not_authorized': u'Although authentication succeeded, the acting user is not allowed to see this information due to privacy restrictions.',
     'rate_limit_exceeded': u'Rate limit for this hour exceeded.',
     'deprecated': u'Something about this request is using deprecated functionality, or the response format may be about to change.',
-    'server_error': u'Server is currently experiencing issues. Check status.foursquare.com for udpates.',
+    'server_error': u'Server is currently experiencing issues. Check status.foursquare.com for updates.',
     'other': u'Some other type of error occurred.',
 }
 
@@ -33,13 +35,32 @@ AUTH_ENDPOINT = u'https://foursquare.com/oauth2/authenticate'
 TOKEN_ENDPOINT = u'https://foursquare.com/oauth2/access_token'
 API_ENDPOINT = u'https://api.foursquare.com/v2'
 
-API_VERSION = u'20111005'
 NUM_REQUEST_RETRIES = 3
 
 
-class FoursquareException(Exception):
-    """Generic foursquare exception"""
-    pass
+# Generic foursquare exception
+class FoursquareException(Exception): pass
+# Specific exceptions
+class InvalidAuth(FoursquareException): pass
+class ParamError(FoursquareException): pass
+class EndpointError(FoursquareException): pass
+class NotAuthorized(FoursquareException): pass
+class RateLimitExceeded(FoursquareException): pass
+class Deprecated(FoursquareException): pass
+class ServerError(FoursquareException): pass
+class Other(FoursquareException): pass
+
+error_types = {
+    'invalid_auth': InvalidAuth,
+    'param_error': ParamError,
+    'endpoint_error': EndpointError,
+    'not_authorized': NotAuthorized,
+    'rate_limit_exceeded': RateLimitExceeded,
+    'deprecated': Deprecated,
+    'server_error': ServerError,
+    'other': Other,
+}
+
 
 class UnauthorizedException(FoursquareException):
     """Your authentication credentials were invalid"""
@@ -56,9 +77,9 @@ re_charset = re.compile(r'(?<=charset\=)(\w*)')
 class Foursquare(object):
     """foursquare V2 API wrapper"""
 
-    def __init__(self, client_id, client_secret, token=None):
+    def __init__(self, client_id, client_secret, token=None, version=None):
         """Sets up the api object"""
-        self.requester = self.Requester(client_id, client_secret, token)
+        self.requester = self.Requester(client_id, client_secret, token, version)
         self.users = self.Users(self.requester)
         self.venues = self.Venues(self.requester)
         self.checkins = self.Checkins(self.requester)
@@ -106,16 +127,17 @@ class Foursquare(object):
 
     class Requester(object):
         """Api requesting object"""
-        def __init__(self, client_id, client_secret, token=None):
+        def __init__(self, client_id, client_secret, token=None, version=None):
             """Sets up the api object"""
             self.client_id = client_id
             self.client_secret = client_secret
             self.oauth_token = token
             self.userless = not bool(token)
+            self.version = version
 
         def GET(self, path, params={}):
             """GET request that returns processed data"""
-            self._imbue_params(params)
+            self._enrich_params(params)
             url = u'{API_ENDPOINT}{path}?{params}'.format(
                 API_ENDPOINT=API_ENDPOINT,
                 path=path,
@@ -125,7 +147,7 @@ class Foursquare(object):
 
         def POST(self, path, params={}):
             """POST request that returns processed data"""
-            self._imbue_params(params)
+            self._enrich_params(params)
             url = u'{API_ENDPOINT}{path}'.format(
                 API_ENDPOINT=API_ENDPOINT,
                 path=path
@@ -133,57 +155,64 @@ class Foursquare(object):
             data = urllib.urlencode(params)
             return self._request(url, data)
 
-        def _imbue_params(self, params):
+        def _enrich_params(self, params):
             """Enrich the params dict"""
-            params.update({'v': API_VERSION})
+            if self.version:
+                params['v'] = self.version
             if self.userless:
-                params.update({
-                    'client_id': self.client_id,
-                    'client_secret': self.client_secret})
+                params['client_id'] = self.client_id
+                params['client_secret'] = self.client_secret
             else:
-                params.update({
-                    'oauth_token': self.oauth_token})
+                params['oauth_token'] = self.oauth_token
             return params
 
         def _request(self, url, data=None):
             """Performs the passed request and returns meaningful data"""
-            response = self._request_with_retry(url, data)
-            if not response:
-                raise BadRequestException(u'Bad url: {url}'.format(url=url))
-            return self._process_response(response)
+            log.debug(u'Requesting url: {url}{data}'.format(
+                url=url,
+                data=u'* {0}'.format(data) if data else u''))
+            return self._request_with_retry(url, data)
 
         def _request_with_retry(self, url, data=None):
             """Tries to load data from an endpoint using retries"""
-            log.debug(u'Requesting url: {url} * {data}'.format(url=url, data=data))
             for i in xrange(NUM_REQUEST_RETRIES):
                 try:
-                    with contextlib.closing(urllib2.urlopen(url, data)) as request:
-                        content_type = request.headers.get('content-type')
-                        encoding = 'utf-8'
-                        if content_type:
-                            match_encoding = re_charset.search(content_type)
-                            if match_encoding:
-                                encoding = match_encoding.group()
-                        return unicode(request.read(), encoding)
-                except urllib2.HTTPError, e:
-                    # Failed. Log and retry in up to 1 sec
-                    log.warning(u'{0}: {1}'.format(e, e.read()))
-                    if e.code == 401:
-                        raise UnauthorizedException(unicode(e))
-                except httplib.BadStatusLine, e:
-                    # What condition causes this?
-                    log.warning(e)
+                    return self._process_request(url, data)
+                except FoursquareException, e:
+                    # Some errors don't bear repeating
+                    if e.__class__ in [InvalidAuth, ParamError, EndpointError, NotAuthorized, Deprecated]: raise
                 time.sleep(1)
             return None
 
-        def _process_response(self, response):
-            """Process the response returned by foursquare"""
-            data = json.loads(response)
-            if 'meta' not in data:
-                raise ValueError(u'Invalid response!')
-            if data['meta'].get('code') != 200:
-                raise ValueError(data['meta'].get('errorDetail'))
-            return data['response']
+        def _process_request(self, url, data=None):
+            """Make the request and handle exception processing"""
+            try:
+                with contextlib.closing(urllib2.urlopen(url, data)) as request:
+                    encoding = 'utf-8' #default
+                    content_type = request.headers.get('content-type')
+                    if content_type:
+                        match_encoding = re_charset.search(content_type)
+                        if match_encoding:
+                            encoding = match_encoding.group()
+                    response_body = unicode(request.read(), encoding)
+                    response = json.loads(response_body)
+                    return response['response']
+            except urllib2.HTTPError, e:
+                response_body = e.read()
+                response = json.loads(response_body)
+                meta = response.get('meta')
+                if meta:
+                    log.warning(meta)
+                    exc = error_types.get(meta.get('errorType'))
+                    if exc:
+                        raise exc(meta.get('errorMessage'))
+                    else:
+                        log.error(u'Unknown error type: {0}'.format(meta.get('errorType')))
+                else:
+                    log.error(response_body)
+            except urllib2.URLError, e:
+                log.error(e)
+                raise FoursquareException(u'Error connecting with foursquare API')
 
 
 
