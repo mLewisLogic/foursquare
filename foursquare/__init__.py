@@ -181,8 +181,8 @@ class Foursquare(object):
                 except FoursquareException, e:
                     # Some errors don't bear repeating
                     if e.__class__ in [InvalidAuth, ParamError, EndpointError, NotAuthorized, Deprecated]: raise
+                    if ((i + 1) == NUM_REQUEST_RETRIES): raise
                 time.sleep(1)
-            return None
 
         def _process_request(self, url, data=None):
             """Make the request and handle exception processing"""
