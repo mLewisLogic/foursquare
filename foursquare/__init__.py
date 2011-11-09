@@ -62,14 +62,6 @@ error_types = {
 }
 
 
-class UnauthorizedException(FoursquareException):
-    """Your authentication credentials were invalid"""
-    pass
-
-class BadRequestException(FoursquareException):
-    """Your request was invalid"""
-    pass
-
 
 # Regular expressions for processing
 re_charset = re.compile(r'(?<=charset\=)(\w*)')
@@ -202,12 +194,12 @@ class Foursquare(object):
                 response = json.loads(response_body)
                 meta = response.get('meta')
                 if meta:
-                    log.warning(meta)
                     exc = error_types.get(meta.get('errorType'))
                     if exc:
-                        raise exc(meta.get('errorMessage'))
+                        raise exc(meta.get('errorDetail'))
                     else:
                         log.error(u'Unknown error type: {0}'.format(meta.get('errorType')))
+                        raise FoursquareException(meta.get('errorDetail'))
                 else:
                     log.error(response_body)
             except urllib2.URLError, e:
