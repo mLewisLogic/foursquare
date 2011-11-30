@@ -75,6 +75,7 @@ class Foursquare(object):
         self.users = self.Users(self.requester)
         self.venues = self.Venues(self.requester)
         self.checkins = self.Checkins(self.requester)
+        self.tips = self.Tips(self.requester)
 
 
     """
@@ -208,7 +209,7 @@ class Foursquare(object):
 
 
 
-    class Endpoint(object):
+    class _Endpoint(object):
         """Generic endpoint class"""
         def __init__(self, requester):
             """Stores the request function for retrieving data"""
@@ -217,7 +218,7 @@ class Foursquare(object):
 
 
 
-    class Users(Endpoint):
+    class Users(_Endpoint):
         """User specific endpoint"""
         def __call__(self, USER_ID=u'self'):
             """ GET: https://developer.foursquare.com/docs/users/users.html
@@ -319,7 +320,7 @@ class Foursquare(object):
 
 
 
-    class Venues(Endpoint):
+    class Venues(_Endpoint):
         """Venue specific endpoint"""
         def __call__(self, VENUE_ID):
             """ GET: https://api.foursquare.com/v2/venues/VENUE_ID
@@ -421,7 +422,7 @@ class Foursquare(object):
 
 
 
-    class Checkins(Endpoint):
+    class Checkins(_Endpoint):
         """Checkin specific endpoint"""
         def __call__(self, CHECKIN_ID, params={}):
             """ GET: https://api.foursquare.com/v2/checkins/CHECKIN_ID
@@ -456,13 +457,25 @@ class Foursquare(object):
 
 
 
-    class Tips(Endpoint):
+    class Tips(_Endpoint):
         """Tips specific endpoint"""
         def __call__(self, TIP_ID):
             """ GET: https://api.foursquare.com/v2/tips/TIP_ID
             Gives details about a tip, including which users (especially friends) have marked the tip to-do or done.
             """
             return self.GET(u'/tips/{TIP_ID}'.format(TIP_ID=TIP_ID))
+
+        def add(self, params):
+            """ POST: https://api.foursquare.com/v2/tips/add
+            Allows you to add a new tip at a venue. 
+                @venueId: The venue where you want to add this tip.
+                @text: The text of the tip, up to 200 characters.
+                @url: A URL related to this tip.
+                @broadcast: Whether to broadcast this tip. Send 'twitter' if you want to send to
+                             twitter, 'facebook' if you want to send to facebook, or 'twitter,facebook'
+                             if you want to send to both.
+            """
+            return self.POST(u'/tips/add', params)
 
         def search(self, params):
             """ GET: https://api.foursquare.com/v2/tips/search
@@ -477,7 +490,7 @@ class Foursquare(object):
 
 
 
-    class Photos(Endpoint):
+    class Photos(_Endpoint):
         """Photo specific endpoint"""
         def __call__(self, PHOTO_ID):
             """ GET: https://api.foursquare.com/v2/photos/PHOTO_ID
@@ -487,7 +500,7 @@ class Foursquare(object):
 
 
 
-    class Settings(Endpoint):
+    class Settings(_Endpoint):
         """Setting specific endpoint"""
         def __call__(self):
             """ GET: https://api.foursquare.com/v2/settings/all
@@ -497,7 +510,7 @@ class Foursquare(object):
 
 
 
-    class Specials(Endpoint):
+    class Specials(_Endpoint):
         """Specials specific endpoint"""
         def __call__(self, SPECIAL_ID, params):
             """ GET: https://api.foursquare.com/v2/specials/SPECIAL_ID
