@@ -9,6 +9,7 @@ except ImportError:
     import json
 
 import contextlib
+import datetime
 import httplib
 import re
 import time
@@ -126,7 +127,10 @@ class Foursquare(object):
             self.client_secret = client_secret
             self.oauth_token = token
             self.userless = not bool(token)
-            self.version = version
+            if version:
+                self.version = version
+            else:
+                self.version = datetime.date.today().strftime('%Y%m%d')
 
         def GET(self, path, params={}):
             """GET request that returns processed data"""
