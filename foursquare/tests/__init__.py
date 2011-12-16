@@ -12,6 +12,7 @@ except ImportError:
     print "Please create a creds.py file in this package, based upon creds.example.py"
 
 
+
 class BaseEnpdointTestCase(unittest.TestCase):
     default_geo = u'40.7,-74.0'
     default_geo_radius = 100
@@ -24,6 +25,14 @@ class BaseEnpdointTestCase(unittest.TestCase):
     default_specialid = u'4e0debea922e6f94b1410bb7'
     default_special_venueid = u'4e0deab3922e6f94b1410af3'
     default_eventid = u'4e173d2cbd412187aabb3c04'
+
+class BaseAuthenticationTestCase(BaseEnpdointTestCase):
+    def setUp(self):
+        self.api = foursquare.Foursquare(
+            client_id=_creds.CLIENT_ID,
+            client_secret=_creds.CLIENT_SECRET,
+            redirect_uri=_creds.REDIRECT_URI
+        )
 
 class BaseAuthenticatedEnpdointTestCase(BaseEnpdointTestCase):
     def setUp(self):

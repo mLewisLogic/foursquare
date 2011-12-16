@@ -19,18 +19,8 @@ import urlparse
 
 
 
+# Default API version. Move this forward as the library is maintained and kept current
 API_VERSION = u'20111215'
-
-ERROR_TYPES = {
-    'invalid_auth': u'OAuth token was not provided or was invalid.',
-    'param_error': u'A required parameter was missing or a parameter was malformed. This is also used if the resource ID in the path is incorrect.',
-    'endpoint_error': u'The requested path does not exist.',
-    'not_authorized': u'Although authentication succeeded, the acting user is not allowed to see this information due to privacy restrictions.',
-    'rate_limit_exceeded': u'Rate limit for this hour exceeded.',
-    'deprecated': u'Something about this request is using deprecated functionality, or the response format may be about to change.',
-    'server_error': u'Server is currently experiencing issues. Check status.foursquare.com for updates.',
-    'other': u'Some other type of error occurred.',
-}
 
 AUTH_ENDPOINT = u'https://foursquare.com/oauth2/authenticate'
 TOKEN_ENDPOINT = u'https://foursquare.com/oauth2/access_token'
@@ -63,9 +53,6 @@ error_types = {
 }
 
 
-
-# Regular expressions for processing
-re_charset = re.compile(r'(?<=charset\=)(\w*)')
 
 class Foursquare(object):
     """foursquare V2 API wrapper"""
@@ -115,14 +102,16 @@ class Foursquare(object):
                 'redirect_uri': self.redirect_uri,
                 'code': unicode(code),
             }
+            # Build the token uri to request
             url = u'{TOKEN_ENDPOINT}?{params}'.format(
                 TOKEN_ENDPOINT=TOKEN_ENDPOINT,
                 params=urllib.urlencode(data))
             log.debug(u'GET: {0}'.format(url))
             access_token = None
+            # Get the response from the token uri and attempt to parse
+            data = _request_with_retry(url)
             try:
-                response = urllib2.urlopen(url)
-                result = json.loads(response.read())
+                result = json.loads(data)
                 access_token = result.get('access_token')
             except (urllib2.HTTPError, NameError), e:
                 log.error(e)
@@ -136,11 +125,8 @@ class Foursquare(object):
             self.client_id = client_id
             self.client_secret = client_secret
             self.oauth_token = access_token
-            self.userless = not bool(access_token)
-            if version:
-                self.version = version
-            else:
-                self.version = API_VERSION
+            self.userless = not bool(access_token) # Userless if no access_token
+            self.version = version if version else API_VERSION
 
         def GET(self, path, params={}):
             """GET request that returns processed data"""
@@ -179,48 +165,7 @@ class Foursquare(object):
                 method='POST' if data else 'GET',
                 url=url,
                 data=u'* {0}'.format(data) if data else u''))
-            return self._request_with_retry(url, data)
-
-        def _request_with_retry(self, url, data=None):
-            """Tries to load data from an endpoint using retries"""
-            for i in xrange(NUM_REQUEST_RETRIES):
-                try:
-                    return self._process_request(url, data)
-                except FoursquareException, e:
-                    # Some errors don't bear repeating
-                    if e.__class__ in [InvalidAuth, ParamError, EndpointError, NotAuthorized, Deprecated]: raise
-                    if ((i + 1) == NUM_REQUEST_RETRIES): raise
-                time.sleep(1)
-
-        def _process_request(self, url, data=None):
-            """Make the request and handle exception processing"""
-            try:
-                with contextlib.closing(urllib2.urlopen(url, data)) as request:
-                    encoding = 'utf-8' #default
-                    content_type = request.headers.get('content-type')
-                    if content_type:
-                        match_encoding = re_charset.search(content_type)
-                        if match_encoding:
-                            encoding = match_encoding.group()
-                    response_body = unicode(request.read(), encoding)
-                    response = json.loads(response_body)
-                    return response['response']
-            except urllib2.HTTPError, e:
-                response_body = e.read()
-                response = json.loads(response_body)
-                meta = response.get('meta')
-                if meta:
-                    exc = error_types.get(meta.get('errorType'))
-                    if exc:
-                        raise exc(meta.get('errorDetail'))
-                    else:
-                        log.error(u'Unknown error type: {0}'.format(meta.get('errorType')))
-                        raise FoursquareException(meta.get('errorDetail'))
-                else:
-                    log.error(response_body)
-            except urllib2.URLError, e:
-                log.error(e)
-                raise FoursquareException(u'Error connecting with foursquare API')
+            return _request_with_retry(url, data)
 
 
 
@@ -620,3 +565,52 @@ class Foursquare(object):
         def search(self, params):
             """https://developer.foursquare.com/docs/events/search"""
             return self.GET(u'search', params)
+
+
+
+
+"""
+Network helper functions
+"""
+def _request_with_retry(url, data=None):
+    """Tries to load data from an endpoint using retries"""
+    for i in xrange(NUM_REQUEST_RETRIES):
+        try:
+            return _process_request(url, data)
+        except FoursquareException, e:
+            # Some errors don't bear repeating
+            if e.__class__ in [InvalidAuth, ParamError, EndpointError, NotAuthorized, Deprecated]: raise
+            if ((i + 1) == NUM_REQUEST_RETRIES): raise
+        time.sleep(1)
+
+# Helps pull the charset out of a response header
+re_charset = re.compile(r'(?<=charset\=)(\w*)')
+def _process_request(url, data=None):
+    """Make the request and handle exception processing"""
+    try:
+        with contextlib.closing(urllib2.urlopen(url, data)) as request:
+            encoding = 'utf-8' #default
+            content_type = request.headers.get('content-type')
+            if content_type:
+                match_encoding = re_charset.search(content_type)
+                if match_encoding:
+                    encoding = match_encoding.group()
+            response_body = unicode(request.read(), encoding)
+            response = json.loads(response_body)
+            return response['response']
+    except urllib2.HTTPError, e:
+        response_body = e.read()
+        response = json.loads(response_body)
+        meta = response.get('meta')
+        if meta:
+            exc = error_types.get(meta.get('errorType'))
+            if exc:
+                raise exc(meta.get('errorDetail'))
+            else:
+                log.error(u'Unknown error type: {0}'.format(meta.get('errorType')))
+                raise FoursquareException(meta.get('errorDetail'))
+        else:
+            log.error(response_body)
+    except urllib2.URLError, e:
+        log.error(e)
+        raise FoursquareException(u'Error connecting with foursquare API')

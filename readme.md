@@ -9,7 +9,7 @@ Philosophy:
 * Full coverage of Core API
 
 Features:
-
+* OAuth dance
 * Automatic retries
 * Useful exception classes
 * Full test coverage (except the OAuth dance)
@@ -21,19 +21,19 @@ Features:
     client = foursquare.Foursquare(client_id='YOUR_CLIENT_ID', client_secret='YOUR_CLIENT_SECRET', redirect_uri='http://fondu.com/oauth/authorize')
     auth_uri = client.oauth.auth_url()
 
-Send your user to the address 'auth_uri' and let them authorize your application. They will then be redirected to your *redirect_uri*, with a query paramater of code=XXXXXXXXXXX. In your webserver, parse out the *code* value, and use it to call:
+Redirect your user to the address *auth_uri* and let them authorize your application. They will then be redirected to your *redirect_uri*, with a query paramater of code=XXXXXXXXXXX. In your webserver, parse out the *code* value, and use it to call:
 
     access_token = client.oauth.get_token('CODE_RETURNED_IN_REDIRECT')
     # Apply the returned access token to the client
     client.set_access_token(access_token)
-    # Get your own user data
+    # Get the user's data
     user = client.users()
 
 ### Instantiating a client
 #### [Userless Access](https://developer.foursquare.com/overview/auth)
     client = foursquare.Foursquare(client_id='YOUR_CLIENT_ID', client_secret='YOUR_CLIENT_SECRET')
 
-#### [Authenticated User Access](https://developer.foursquare.com/overview/auth)
+#### [Authenticated User Access](https://developer.foursquare.com/overview/auth) (when you already have a user's access_token)
     client = foursquare.Foursquare(access_token='USER_ACCESS_TOKEN')
 
 

@@ -3,16 +3,11 @@
 # (c) 2011 Mike Lewis
 import logging; log = logging.getLogger(__name__)
 
+from . import BaseAuthenticationTestCase
 
 
-class AuthenticationTestCase(unittest.TestCase):
-    def setUp(self):
-        self.api = foursquare.Foursquare(
-            client_id=_creds.CLIENT_ID,
-            client_secret=_creds.CLIENT_SECRET,
-            redirect_uri=_creds.REDIRECT_URI
-        )
 
+class OAuthEndpointTestCase(BaseAuthenticationTestCase):
     def test_auth_url(self):
         url = self.api.oauth.auth_url()
         assert isinstance(url, basestring)
