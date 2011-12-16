@@ -1,1 +1,7 @@
-Foursquare V2 API library for Python
+# foursquare
+
+Python wrapper for the [foursquare v2 API](http://developer.foursquare.com/docs/).
+
+## Usage
+
+### Authentication
