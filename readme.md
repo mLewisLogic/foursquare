@@ -73,6 +73,7 @@ The OAuth2 dance is untested. The functionality of this package is for once you 
 
 ### Full endpoint list
 Note: endpoint methods map one-to-one with foursquare's endpoints
+
     users()
     users.leaderboard()
     users.requests()
