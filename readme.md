@@ -32,6 +32,7 @@ The OAuth2 dance is untested. The functionality of this package is for once you 
 #### [Specifing a specific API version](https://developer.foursquare.com/overview/versioning)
     client = foursquare.Foursquare(client_id='YOUR_CLIENT_ID', client_secret='YOUR_CLIENT_SECRET', version='20111215')
 or
+
     client = foursquare.Foursquare(access_token='USER_ACCESS_TOKEN', version='20111215')
 
 
