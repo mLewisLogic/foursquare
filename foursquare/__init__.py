@@ -109,13 +109,8 @@ class Foursquare(object):
             log.debug(u'GET: {0}'.format(url))
             access_token = None
             # Get the response from the token uri and attempt to parse
-            data = _request_with_retry(url)
-            try:
-                result = json.loads(data)
-                access_token = result.get('access_token')
-            except (urllib2.HTTPError, NameError), e:
-                log.error(e)
-            return access_token
+            response = _request_with_retry(url)
+            return response.get('access_token')
 
 
     class Requester(object):
@@ -165,7 +160,7 @@ class Foursquare(object):
                 method='POST' if data else 'GET',
                 url=url,
                 data=u'* {0}'.format(data) if data else u''))
-            return _request_with_retry(url, data)
+            return _request_with_retry(url, data)['response']
 
 
 
@@ -597,7 +592,7 @@ def _process_request(url, data=None):
                     encoding = match_encoding.group()
             response_body = unicode(request.read(), encoding)
             response = json.loads(response_body)
-            return response['response']
+            return response
     except urllib2.HTTPError, e:
         response_body = e.read()
         response = json.loads(response_body)
