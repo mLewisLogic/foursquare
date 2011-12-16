@@ -18,11 +18,15 @@ Features:
 ## Usage
 
 ### Authentication
+
+    # Construct the client object
     client = foursquare.Foursquare(client_id='YOUR_CLIENT_ID', client_secret='YOUR_CLIENT_SECRET', redirect_uri='http://fondu.com/oauth/authorize')
+    # Build the authorization url for your app
     auth_uri = client.oauth.auth_url()
 
-Redirect your user to the address *auth_uri* and let them authorize your application. They will then be redirected to your *redirect_uri*, with a query paramater of code=XX_CODE_RETURNED_IN_REDIRECT_XX. In your webserver, parse out the *code* value, and use it to call client.oauth.get_token()
+Redirect your user to the address *auth_uri* and let them authorize your app. They will then be redirected to your *redirect_uri*, with a query paramater of code=XX_CODE_RETURNED_IN_REDIRECT_XX. In your webserver, parse out the *code* value, and use it to call client.oauth.get_token()
 
+    # Interrogate foursquare's servers to get the user's access_token
     access_token = client.oauth.get_token('XX_CODE_RETURNED_IN_REDIRECT_XX')
     # Apply the returned access token to the client
     client.set_access_token(access_token)
