@@ -75,17 +75,18 @@ class Foursquare(object):
         # Set up OAuth
         self.oauth = self.OAuth(client_id, client_secret, redirect_uri)
         # Set up endpoints
-        requester = self.Requester(client_id, client_secret, access_token, version)
+        self.base_requester = self.Requester(client_id, client_secret, access_token, version)
         for endpoint in ['Users', 'Venues', 'Checkins', 'Tips', 'Lists', 'Photos', 'Settings', 'Specials', 'Events']:
-            endpoint_obj = getattr(self, endpoint)(requester)
+            endpoint_obj = getattr(self, endpoint)(self.base_requester)
             setattr(self, endpoint_obj.endpoint, endpoint_obj)
 
+    def set_access_token(self, access_token):
+        """Update the access token to use"""
+        self.base_requester.access_token = access_token
 
-    """
-    AUTHENTICATOR IS UNTESTED!
-    """
+
     class OAuth(object):
-        """Handles authentication procedures and helps retrieve tokens"""
+        """Handles OAuth authentication procedures and helps retrieve tokens"""
         def __init__(self, client_id, client_secret, redirect_uri):
             self.client_id = client_id
             self.client_secret = client_secret

@@ -18,8 +18,16 @@ Features:
 ## Usage
 
 ### Authentication
-The OAuth2 dance is untested. The functionality of this package is for once you have a user token (or wish to perform userless actions). Follow the guide [here](https://developer.foursquare.com/overview/auth) to get the user's access token.
+    client = foursquare.Foursquare(client_id='YOUR_CLIENT_ID', client_secret='YOUR_CLIENT_SECRET', redirect_uri='http://fondu.com/oauth/authorize')
+    auth_uri = client.oauth.auth_url()
 
+Send your user to the address 'auth_uri' and let them authorize your application. They will then be redirected to your *redirect_uri*, with a query paramater of code=XXXXXXXXXXX. In your webserver, parse out the *code* value, and use it to call:
+
+    access_token = client.oauth.get_token('CODE_RETURNED_IN_REDIRECT')
+    # Apply the returned access token to the client
+    client.set_access_token(access_token)
+    # Get your own user data
+    user = client.users()
 
 ### Instantiating a client
 #### [Userless Access](https://developer.foursquare.com/overview/auth)
