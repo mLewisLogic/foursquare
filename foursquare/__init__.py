@@ -70,7 +70,7 @@ re_charset = re.compile(r'(?<=charset\=)(\w*)')
 class Foursquare(object):
     """foursquare V2 API wrapper"""
 
-    def __init__(self, client_id, client_secret, access_token=None, version=None):
+    def __init__(self, client_id=None, client_secret=None, access_token=None, version=None):
         """Sets up the api object"""
         self.requester = self.Requester(client_id, client_secret, access_token, version)
         for endpoint in ['Users', 'Venues', 'Checkins', 'Tips', 'Lists', 'Photos', 'Settings', 'Specials', 'Events']:
@@ -120,7 +120,7 @@ class Foursquare(object):
 
     class Requester(object):
         """Api requesting object"""
-        def __init__(self, client_id, client_secret, access_token=None, version=None):
+        def __init__(self, client_id=None, client_secret=None, access_token=None, version=None):
             """Sets up the api object"""
             self.client_id = client_id
             self.client_secret = client_secret
