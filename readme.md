@@ -1,6 +1,6 @@
 # foursquare
 
-Python wrapper for the [foursquare v2 API](http://developer.foursquare.com/docs/).
+Python wrapper for the [foursquare v2 API](http://developer.foursquare.com/docs/). Originally developed to power [Fondu](http://fondu.com).
 
 Philosophy:
 
