@@ -94,16 +94,17 @@ class Foursquare(object):
                 AUTH_ENDPOINT=AUTH_ENDPOINT,
                 params=urllib.urlencode(data))
 
-        def get_token(self, request, redirect_url):
+        def get_token(self, code, redirect_url):
             """Gets the auth token from a user's response"""
-            if 'code' not in request.GET:
-                return False
+            if not code:
+                log.error(u'Code not provided')
+                return None
             data = {
                 'client_id': self.client_id,
                 'client_secret': self.client_secret,
                 'grant_type': u'authorization_code',
                 'redirect_uri': redirect_url,
-                'code': request.GET.get('code'),
+                'code': unicode(code),
             }
             url = u'{TOKEN_ENDPOINT}?{params}'.format(
                 TOKEN_ENDPOINT=TOKEN_ENDPOINT,
