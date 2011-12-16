@@ -12,7 +12,6 @@ except ImportError:
     print "Please create a creds.py file in this package, based upon creds.example.py"
 
 
-
 class BaseEnpdointTestCase(unittest.TestCase):
     default_geo = u'40.7,-74.0'
     default_geo_radius = 100
@@ -41,4 +40,3 @@ class BaseUserlessEnpdointTestCase(BaseEnpdointTestCase):
             client_secret=_creds.CLIENT_SECRET,
             access_token=_creds.ACCESS_TOKEN
         )
-

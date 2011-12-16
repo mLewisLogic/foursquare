@@ -70,31 +70,39 @@ re_charset = re.compile(r'(?<=charset\=)(\w*)')
 class Foursquare(object):
     """foursquare V2 API wrapper"""
 
-    def __init__(self, client_id=None, client_secret=None, access_token=None, version=None):
+    def __init__(self, client_id=None, client_secret=None, access_token=None, redirect_uri=None, version=None):
         """Sets up the api object"""
-        self.requester = self.Requester(client_id, client_secret, access_token, version)
+        # Set up OAuth
+        self.oauth = self.OAuth(client_id, client_secret, redirect_uri)
+        # Set up endpoints
+        requester = self.Requester(client_id, client_secret, access_token, version)
         for endpoint in ['Users', 'Venues', 'Checkins', 'Tips', 'Lists', 'Photos', 'Settings', 'Specials', 'Events']:
-            endpoint_obj = getattr(self, endpoint)(self.requester)
+            endpoint_obj = getattr(self, endpoint)(requester)
             setattr(self, endpoint_obj.endpoint, endpoint_obj)
 
 
     """
     AUTHENTICATOR IS UNTESTED!
     """
-    class Authenticator(object):
+    class OAuth(object):
         """Handles authentication procedures and helps retrieve tokens"""
-        def auth_url(self, redirect_url, mobile=False):
+        def __init__(self, client_id, client_secret, redirect_uri):
+            self.client_id = client_id
+            self.client_secret = client_secret
+            self.redirect_uri = redirect_uri
+
+        def auth_url(self):
             """Gets the url a user needs to access to give up a user token"""
             data = {
                 'client_id': self.client_id,
                 'response_type': u'code',
-                'redirect_uri': redirect_url
+                'redirect_uri': self.redirect_uri,
             }
             return u'{AUTH_ENDPOINT}?{params}'.format(
                 AUTH_ENDPOINT=AUTH_ENDPOINT,
                 params=urllib.urlencode(data))
 
-        def get_token(self, code, redirect_url):
+        def get_token(self, code):
             """Gets the auth token from a user's response"""
             if not code:
                 log.error(u'Code not provided')
@@ -103,19 +111,20 @@ class Foursquare(object):
                 'client_id': self.client_id,
                 'client_secret': self.client_secret,
                 'grant_type': u'authorization_code',
-                'redirect_uri': redirect_url,
+                'redirect_uri': self.redirect_uri,
                 'code': unicode(code),
             }
             url = u'{TOKEN_ENDPOINT}?{params}'.format(
                 TOKEN_ENDPOINT=TOKEN_ENDPOINT,
                 params=urllib.urlencode(data))
-            data = read_url_with_retry(url)
+            log.debug(u'GET: {0}'.format(url))
+            access_token = None
             try:
-                result = json.loads(data)
+                response = urllib2.urlopen(url)
+                result = json.loads(response.read())
                 access_token = result.get('access_token')
-            except NameError, e:
+            except (urllib2.HTTPError, NameError), e:
                 log.error(e)
-                access_token = None
             return access_token
 
 
