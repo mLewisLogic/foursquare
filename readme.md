@@ -31,6 +31,7 @@ The OAuth2 dance is untested. The functionality of this package is for once you 
 
 #### [Specifing a specific API version](https://developer.foursquare.com/overview/versioning)
     client = foursquare.Foursquare(client_id='YOUR_CLIENT_ID', client_secret='YOUR_CLIENT_SECRET', version='20111215')
+or
     client = foursquare.Foursquare(access_token='USER_ACCESS_TOKEN', version='20111215')
 
 
@@ -40,15 +41,15 @@ The OAuth2 dance is untested. The functionality of this package is for once you 
 ##### [Getting your own user object](https://developer.foursquare.com/docs/users/users)
     client.users()
 ##### [Getting another user](https://developer.foursquare.com/docs/users/users)
-    client.users(1183247)
+    client.users('1183247')
 ##### [Get your checkins](https://developer.foursquare.com/docs/users/checkins)
     client.users.checkins()
 ##### [Get your most recent checkin](https://developer.foursquare.com/docs/users/checkins)
     client.users.checkins(params={'limit': 1})
 ##### Get *all* of your friends' checkins (not a native 4sq call)
-    client.users.all_checkins(1183247)
+    client.users.all_checkins('1183247')
 ##### [Approve a friend's friend request](https://developer.foursquare.com/docs/users/approve)
-    client.users.approve(1183247)
+    client.users.approve('1183247')
 
 #### Venues
 ##### [Get details about a venue](https://developer.foursquare.com/docs/venues/venues)
@@ -62,7 +63,7 @@ The OAuth2 dance is untested. The functionality of this package is for once you 
 ##### [Get recent checkins for yourself](https://developer.foursquare.com/docs/checkins/recent)
     client.checkins.recent()
 ##### [Get recent checkins for a friend](https://developer.foursquare.com/docs/checkins/recent)
-    client.checkins.recent(1183247)
+    client.checkins.recent('1183247')
 
 #### Tips
 ##### [Get a specific tip](https://developer.foursquare.com/docs/tips/tips)
@@ -80,7 +81,7 @@ Note: endpoint methods map one-to-one with foursquare's endpoints
     users.search()
     users.badges()
     users.checkins()
-    users.all_checkins() [*not native*]
+    users.all_checkins() [*not a native endpoint*]
     users.friends()
     users.lists()
     users.mayorships()
