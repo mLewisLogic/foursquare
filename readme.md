@@ -6,13 +6,13 @@ Philosophy:
 
 * Map foursquare's endpoints one-to-one
 * Clean, simple, Pythonic calls
-* Full coverage of Core API
 
 Features:
+
 * OAuth dance
 * Automatic retries
+* Full endpoint (and test) coverage
 * Useful exception classes
-* Full test coverage (except the OAuth dance)
 
 
 ## Usage
@@ -21,9 +21,9 @@ Features:
     client = foursquare.Foursquare(client_id='YOUR_CLIENT_ID', client_secret='YOUR_CLIENT_SECRET', redirect_uri='http://fondu.com/oauth/authorize')
     auth_uri = client.oauth.auth_url()
 
-Redirect your user to the address *auth_uri* and let them authorize your application. They will then be redirected to your *redirect_uri*, with a query paramater of code=XXXXXXXXXXX. In your webserver, parse out the *code* value, and use it to call:
+Redirect your user to the address *auth_uri* and let them authorize your application. They will then be redirected to your *redirect_uri*, with a query paramater of code=XX_CODE_RETURNED_IN_REDIRECT_XX. In your webserver, parse out the *code* value, and use it to call client.oauth.get_token()
 
-    access_token = client.oauth.get_token('CODE_RETURNED_IN_REDIRECT')
+    access_token = client.oauth.get_token('XX_CODE_RETURNED_IN_REDIRECT_XX')
     # Apply the returned access token to the client
     client.set_access_token(access_token)
     # Get the user's data
@@ -168,9 +168,8 @@ Note: endpoint methods map one-to-one with foursquare's endpoints
 What else would you like this library to do? Let me know. Feel free to send pull requests for any improvements you make.
 
 ### Todo
-* Get OAuth dance working (with unit tests)
-* Test coverage for write methods
 * Bring in new endpoints as they emerge
+* Test coverage for write methods
 * Merchant-specific endpoints (someday)
 
 ## License
