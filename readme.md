@@ -10,7 +10,6 @@ Features:
 * Useful exception classes
 * Full test coverage (except the OAuth dance)
 
-***
 ## Usage
 
 ### Authentication
@@ -70,6 +69,6 @@ The OAuth2 dance is untested. The functionality of this package is for once you 
 ### Of course, there is much more functionality than this. If it's in foursquare's docs, it's probably in this library (except for merchant-specific endpoints).
 
 Supported endpoints: Users, Venues, Checkins, Tips, Lists, Photos, Settings, Specials, Events
-***
+
 ## Improvements
 What else would you like this library to do? Let me know. Feel free to send pull requests for any improvements you make.
