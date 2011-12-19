@@ -303,6 +303,7 @@ class Foursquare(object):
             """https://developer.foursquare.com/docs/venues/explore"""
             return self.GET(u'explore', params)
 
+        MAX_SEARCH_LIMIT = 50
         def search(self, params):
             """https://developer.foursquare.com/docs/venues/search"""
             return self.GET(u'search', params)
