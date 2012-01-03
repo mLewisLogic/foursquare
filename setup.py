@@ -9,7 +9,6 @@ version = '0.1'
 setup(name=u'foursquare',
       version=version,
       description='An API wrapper for Foursquare V2',
-#      long_description=open('./README', 'r').read(),
       classifiers=[
           'Development Status :: 3 - Alpha',
           'Environment :: Console',
