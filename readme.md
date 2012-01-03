@@ -6,6 +6,7 @@ Philosophy:
 
 * Map foursquare's endpoints one-to-one
 * Clean, simple, Pythonic calls
+* Only handle raw data, you define your own models
 
 Features:
 
@@ -21,6 +22,7 @@ Features:
 
     # Construct the client object
     client = foursquare.Foursquare(client_id='YOUR_CLIENT_ID', client_secret='YOUR_CLIENT_SECRET', redirect_uri='http://fondu.com/oauth/authorize')
+    
     # Build the authorization url for your app
     auth_uri = client.oauth.auth_url()
 
@@ -28,8 +30,10 @@ Redirect your user to the address *auth_uri* and let them authorize your app. Th
 
     # Interrogate foursquare's servers to get the user's access_token
     access_token = client.oauth.get_token('XX_CODE_RETURNED_IN_REDIRECT_XX')
+    
     # Apply the returned access token to the client
     client.set_access_token(access_token)
+    
     # Get the user's data
     user = client.users()
 
