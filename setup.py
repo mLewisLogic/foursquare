@@ -1,17 +1,22 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
-# (c) 2011 Mike Lewis
+# (c) 2012 Mike Lewis
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
-version = '0.1'
+import foursquare
+version = str(foursquare.__version__)
 
 setup(name=u'foursquare',
       version=version,
-      description='An API wrapper for Foursquare V2',
+      author='Mike Lewis',
+      author_email='mike@cleverkoala.com',
+      url='http://github.com/mLewisLogic/foursquare',
+      description='Full-service library for Foursquare V2 API',
+      long_description=open('./readme.md', 'r').read(),
+      download_url='http://github.com/mLewisLogic/foursquare/tarball/master',
       classifiers=[
-          'Development Status :: 3 - Alpha',
-          'Environment :: Console',
+          'Development Status :: 4 - Beta',
           'Intended Audience :: Developers',
           'Natural Language :: English',
           'Operating System :: OS Independent',
@@ -19,12 +24,9 @@ setup(name=u'foursquare',
           'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
           'License :: OSI Approved :: MIT License',
           ],
-      keywords='foursquare',
-      author='Mike Lewis',
-      author_email='mike@fondu.com',
-      url='http://github.com/mLewisLogic/foursquare',
+      packages=find_packages(),
       license='MIT License',
-      packages=['foursquare'],
+      keywords='foursquare api',
       include_package_data=True,
       zip_safe=True,
       )

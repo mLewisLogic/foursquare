@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
-# (c) 2011 Mike Lewis
+# (c) 2012 Mike Lewis
 import logging; log = logging.getLogger(__name__)
 
 try:
@@ -17,6 +17,9 @@ import urllib
 import urllib2
 import urlparse
 
+
+__version__ = 0.2
+__author__ = u'Mike Lewis'
 
 
 # Default API version. Move this forward as the library is maintained and kept current

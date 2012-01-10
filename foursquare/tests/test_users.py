@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
-# (c) 2011 Mike Lewis
+# (c) 2012 Mike Lewis
 import logging; log = logging.getLogger(__name__)
 
 from . import BaseAuthenticatedEnpdointTestCase
