@@ -19,12 +19,12 @@ import urllib2
 import urlparse
 
 
-__version__ = 0.2
-__author__ = u'Mike Lewis'
-
-
 # Default API version. Move this forward as the library is maintained and kept current
-API_VERSION = u'20111215'
+API_VERSION = u'20120126'
+
+# Library versioning matches supported foursquare API version
+__version__ = API_VERSION
+__author__ = u'Mike Lewis'
 
 AUTH_ENDPOINT = u'https://foursquare.com/oauth2/authenticate'
 TOKEN_ENDPOINT = u'https://foursquare.com/oauth2/access_token'
