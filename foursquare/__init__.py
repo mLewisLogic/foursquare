@@ -12,6 +12,7 @@ import contextlib
 import datetime
 import httplib
 import re
+import socket
 import time
 import urllib
 import urllib2
@@ -611,5 +612,8 @@ def _process_request(url, data=None):
         else:
             log.error(response_body)
     except urllib2.URLError, e:
+        log.error(e)
+        raise FoursquareException(u'Error connecting with foursquare API')
+    except socket.error, e:
         log.error(e)
         raise FoursquareException(u'Error connecting with foursquare API')
