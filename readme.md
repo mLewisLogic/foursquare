@@ -12,7 +12,8 @@ Features:
 
 * OAuth dance
 * Automatic retries
-* Full endpoint (and test) coverage
+* Full endpoint coverage (non-merchant)
+* Full test coverage
 * Useful exception classes
 
 
