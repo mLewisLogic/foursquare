@@ -21,7 +21,7 @@ import urlparse
 
 # Global flag indicating if this code is running on GAE.
 # Set to True before making requests if on Google App Engine
-GOOGLE_APP_ENGINE = False
+GOOGLE_APP_ENGINE = True
 
 # Default API version. Move this forward as the library is maintained and kept current
 API_VERSION = u'20120126'
@@ -596,6 +596,9 @@ def _request_with_retry(url, data=None):
 re_charset = re.compile(r'(?<=charset\=)(\w*)')
 def _process_request(url, data=None):
     """Make the request and handle exception processing"""
+    # Use the GAE specific request if needed
+    if GOOGLE_APP_ENGINE: return _process_request_on_gae(url, data)
+    # Normal request
     try:
         with contextlib.closing(urllib2.urlopen(url, data)) as request:
             if request.getcode() != 200:
@@ -626,3 +629,24 @@ def _process_request(url, data=None):
     except (urllib2.URLError, socket.error), e:
         log.error(e)
         raise FoursquareException(u'Error connecting with foursquare API')
+
+def _process_request_on_gae(url, data=None):
+    """
+    Akshay Patil's (@akdotcom) fix for Google App Engine wackiness
+    see: http://stackoverflow.com/questions/8411622/why-this-error-from-urllib
+    
+    TODO: Needs better error handling.
+    """
+    with contextlib.closing(urllib.urlopen(url, data)) as request:
+        if request.getcode() != 200:
+            log.error(u'Non 200 response: {code}'.format(code=request.getcode()))
+        # Figure out the response encoding format
+        encoding = 'utf-8' #default
+        content_type = request.headers.get('content-type')
+        if content_type:
+            match_encoding = re_charset.search(content_type)
+            if match_encoding:
+                encoding = match_encoding.group()
+        # Read and parse the response
+        response_body = unicode(request.read(), encoding)
+        return json.loads(response_body)
