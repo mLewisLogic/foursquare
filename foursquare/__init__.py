@@ -19,6 +19,10 @@ import urllib2
 import urlparse
 
 
+# Global flag indicating if this code is running on GAE.
+# Set to True before making requests if on Google App Engine
+GOOGLE_APP_ENGINE = False
+
 # Default API version. Move this forward as the library is maintained and kept current
 API_VERSION = u'20120126'
 
@@ -73,7 +77,7 @@ class Foursquare(object):
 
     def set_access_token(self, access_token):
         """Update the access token to use"""
-        self.base_requester.access_token = access_token
+        self.base_requester.set_token(access_token)
 
 
     class OAuth(object):
@@ -111,7 +115,6 @@ class Foursquare(object):
                 TOKEN_ENDPOINT=TOKEN_ENDPOINT,
                 params=urllib.urlencode(data))
             log.debug(u'GET: {0}'.format(url))
-            access_token = None
             # Get the response from the token uri and attempt to parse
             response = _request_with_retry(url)
             return response.get('access_token')
@@ -123,9 +126,13 @@ class Foursquare(object):
             """Sets up the api object"""
             self.client_id = client_id
             self.client_secret = client_secret
+            self.set_token(access_token)
+            self.version = version if version else API_VERSION
+
+        def set_token(self, access_token):
+            """Set the OAuth token for this requester"""
             self.oauth_token = access_token
             self.userless = not bool(access_token) # Userless if no access_token
-            self.version = version if version else API_VERSION
 
         def GET(self, path, params={}):
             """GET request that returns processed data"""
@@ -330,7 +337,9 @@ class Foursquare(object):
         def listed(self, VENUE_ID, params={}):
             """https://developer.foursquare.com/docs/venues/listed"""
             return self.GET(u'{VENUE_ID}/listed'.format(VENUE_ID=VENUE_ID), params)
-
+        def menu(self, VENUE_ID, params={}):
+            """https://developer.foursquare.com/docs/venues/menu"""
+            return self.GET(u'{VENUE_ID}/menu'.format(VENUE_ID=VENUE_ID), params)
         def photos(self, VENUE_ID, params):
             """https://developer.foursquare.com/docs/venues/photos"""
             return self.GET(u'{VENUE_ID}/photos'.format(VENUE_ID=VENUE_ID), params)
@@ -547,7 +556,7 @@ class Foursquare(object):
         """
         def flag(self, SPECIAL_ID, params):
             """https://developer.foursquare.com/docs/specials/flag"""
-            return self.GET(u'{LIST_ID}/flag'.format(LIST_ID=LIST_ID), params)
+            return self.POST(u'{SPECIAL_ID}/flag'.format(SPECIAL_ID=SPECIAL_ID), params)
 
 
     class Events(_Endpoint):
@@ -589,15 +598,18 @@ def _process_request(url, data=None):
     """Make the request and handle exception processing"""
     try:
         with contextlib.closing(urllib2.urlopen(url, data)) as request:
+            if request.getcode() != 200:
+                log.error(u'Non 200 response: {code}'.format(code=request.getcode()))
+            # Figure out the response encoding format
             encoding = 'utf-8' #default
             content_type = request.headers.get('content-type')
             if content_type:
                 match_encoding = re_charset.search(content_type)
                 if match_encoding:
                     encoding = match_encoding.group()
+            # Read and parse the response
             response_body = unicode(request.read(), encoding)
-            response = json.loads(response_body)
-            return response
+            return json.loads(response_body)
     except urllib2.HTTPError, e:
         response_body = e.read()
         response = json.loads(response_body)
@@ -611,9 +623,6 @@ def _process_request(url, data=None):
                 raise FoursquareException(meta.get('errorDetail'))
         else:
             log.error(response_body)
-    except urllib2.URLError, e:
-        log.error(e)
-        raise FoursquareException(u'Error connecting with foursquare API')
-    except socket.error, e:
+    except (urllib2.URLError, socket.error), e:
         log.error(e)
         raise FoursquareException(u'Error connecting with foursquare API')
