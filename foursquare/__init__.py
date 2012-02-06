@@ -24,7 +24,7 @@ import urlparse
 GOOGLE_APP_ENGINE = True
 
 # Default API version. Move this forward as the library is maintained and kept current
-API_VERSION = u'20120126'
+API_VERSION = u'20120206'
 
 # Library versioning matches supported foursquare API version
 __version__ = API_VERSION
