@@ -10,7 +10,7 @@ except ImportError:
 
 import contextlib
 import datetime
-import httplib
+import httplib2
 import re
 import socket
 import time
@@ -19,9 +19,6 @@ import urllib2
 import urlparse
 
 
-# Global flag indicating if this code is running on GAE.
-# Set to True before making requests if on Google App Engine
-GOOGLE_APP_ENGINE = True
 
 # Default API version. Move this forward as the library is maintained and kept current
 API_VERSION = u'20120206'
@@ -592,31 +589,18 @@ def _request_with_retry(url, data=None):
             if ((i + 1) == NUM_REQUEST_RETRIES): raise
         time.sleep(1)
 
-# Helps pull the charset out of a response header
-re_charset = re.compile(r'(?<=charset\=)(\w*)')
 def _process_request(url, data=None):
     """Make the request and handle exception processing"""
-    # Use the GAE specific request if needed
-    if GOOGLE_APP_ENGINE: return _process_request_on_gae(url, data)
-    # Normal request
+    h = httplib2.Http()
     try:
-        with contextlib.closing(urllib2.urlopen(url, data)) as request:
-            if request.getcode() != 200:
-                log.error(u'Non 200 response: {code}'.format(code=request.getcode()))
-            # Figure out the response encoding format
-            encoding = 'utf-8' #default
-            content_type = request.headers.get('content-type')
-            if content_type:
-                match_encoding = re_charset.search(content_type)
-                if match_encoding:
-                    encoding = match_encoding.group()
-            # Read and parse the response
-            response_body = unicode(request.read(), encoding)
-            return json.loads(response_body)
-    except urllib2.HTTPError, e:
-        response_body = e.read()
-        response = json.loads(response_body)
-        meta = response.get('meta')
+        response, body = h.request(url, body=data)
+        data = json.loads(body)
+        # Default case, Got proper response
+        if response.status == 200:
+            return data
+        # Non-200 response. Handle the error
+        log.warning(u'Bad 4sq response: {0}'.format(body))
+        meta = data.get('meta')
         if meta:
             exc = error_types.get(meta.get('errorType'))
             if exc:
@@ -626,27 +610,6 @@ def _process_request(url, data=None):
                 raise FoursquareException(meta.get('errorDetail'))
         else:
             log.error(response_body)
-    except (urllib2.URLError, socket.error), e:
+    except httplib2.HttpLib2Error, e:
         log.error(e)
         raise FoursquareException(u'Error connecting with foursquare API')
-
-def _process_request_on_gae(url, data=None):
-    """
-    Akshay Patil's (@akdotcom) fix for Google App Engine wackiness
-    see: http://stackoverflow.com/questions/8411622/why-this-error-from-urllib
-    
-    TODO: Needs better error handling.
-    """
-    with contextlib.closing(urllib.urlopen(url, data)) as request:
-        if request.getcode() != 200:
-            log.error(u'Non 200 response: {code}'.format(code=request.getcode()))
-        # Figure out the response encoding format
-        encoding = 'utf-8' #default
-        content_type = request.headers.get('content-type')
-        if content_type:
-            match_encoding = re_charset.search(content_type)
-            if match_encoding:
-                encoding = match_encoding.group()
-        # Read and parse the response
-        response_body = unicode(request.read(), encoding)
-        return json.loads(response_body)
