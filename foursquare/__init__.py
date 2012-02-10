@@ -10,13 +10,18 @@ except ImportError:
 
 import contextlib
 import datetime
-import httplib2
 import re
 import socket
 import time
 import urllib
 import urllib2
 import urlparse
+
+# Might not be present during initial install, that's ok
+try:
+    import httplib2
+except ImportError:
+    pass
 
 
 

@@ -16,6 +16,10 @@ Features:
 * Full test coverage
 * Useful exception classes
 
+Dependencies:
+
+* httplib2
+* simplejson (optional)
 
 ## Usage
 
