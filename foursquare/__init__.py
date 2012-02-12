@@ -594,10 +594,11 @@ def _request_with_retry(url, data=None):
             if ((i + 1) == NUM_REQUEST_RETRIES): raise
         time.sleep(1)
 
-def _process_request(url, data=None):
+def _process_request_with_httplib2(url, data=None):
     """Make the request and handle exception processing"""
     h = httplib2.Http()
     try:
+        log.debug(data)
         response, body = h.request(url, body=data)
         data = json.loads(body)
         # Default case, Got proper response
@@ -618,3 +619,64 @@ def _process_request(url, data=None):
     except httplib2.HttpLib2Error, e:
         log.error(e)
         raise FoursquareException(u'Error connecting with foursquare API')
+
+GOOGLE_APP_ENGINE = False
+
+# Helps pull the charset out of a response header
+re_charset = re.compile(r'(?<=charset\=)(\w*)')
+def _process_request(url, data=None):
+    """Make the request and handle exception processing"""
+    # Use the GAE specific request if needed
+    if GOOGLE_APP_ENGINE: return _process_request_on_gae(url, data)
+    # Normal request
+    try:
+        with contextlib.closing(urllib2.urlopen(url, data)) as request:
+            if request.getcode() != 200:
+                log.error(u'Non 200 response: {code}'.format(code=request.getcode()))
+            # Figure out the response encoding format
+            encoding = 'utf-8' #default
+            content_type = request.headers.get('content-type')
+            if content_type:
+                match_encoding = re_charset.search(content_type)
+                if match_encoding:
+                    encoding = match_encoding.group()
+            # Read and parse the response
+            response_body = unicode(request.read(), encoding)
+            return json.loads(response_body)
+    except urllib2.HTTPError, e:
+        response_body = e.read()
+        response = json.loads(response_body)
+        meta = response.get('meta')
+        if meta:
+            exc = error_types.get(meta.get('errorType'))
+            if exc:
+                raise exc(meta.get('errorDetail'))
+            else:
+                log.error(u'Unknown error type: {0}'.format(meta.get('errorType')))
+                raise FoursquareException(meta.get('errorDetail'))
+        else:
+            log.error(response_body)
+    except (urllib2.URLError, socket.error), e:
+        log.error(e)
+        raise FoursquareException(u'Error connecting with foursquare API')
+
+def _process_request_on_gae(url, data=None):
+    """
+Akshay Patil's (@akdotcom) fix for Google App Engine wackiness
+see: http://stackoverflow.com/questions/8411622/why-this-error-from-urllib
+TODO: Needs better error handling.
+"""
+    with contextlib.closing(urllib.urlopen(url, data)) as request:
+        if request.getcode() != 200:
+            log.error(u'Non 200 response: {code}'.format(code=request.getcode()))
+        # Figure out the response encoding format
+        encoding = 'utf-8' #default
+        content_type = request.headers.get('content-type')
+        if content_type:
+            match_encoding = re_charset.search(content_type)
+            if match_encoding:
+                encoding = match_encoding.group()
+        # Read and parse the response
+        response_body = unicode(request.read(), encoding)
+        return json.loads(response_body)
+
