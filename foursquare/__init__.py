@@ -74,7 +74,11 @@ class Foursquare(object):
         self.oauth = self.OAuth(client_id, client_secret, redirect_uri)
         # Set up endpoints
         self.base_requester = self.Requester(client_id, client_secret, access_token, version)
-        # Dynamically enable all endpoints supported
+        # Dynamically enable endpoints
+        self._attach_endpoints()
+
+    def _attach_endpoints(self):
+        """Dynamically attach endpoint callables to this client"""
         for name, endpoint in inspect.getmembers(self):
             if inspect.isclass(endpoint) and issubclass(endpoint, self._Endpoint) and (endpoint is not self._Endpoint):
                 endpoint_instance = endpoint(self.base_requester)
