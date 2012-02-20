@@ -10,6 +10,7 @@ except ImportError:
 
 import contextlib
 import datetime
+import inspect
 import re
 import socket
 import time
@@ -26,7 +27,7 @@ except ImportError:
 
 
 # Default API version. Move this forward as the library is maintained and kept current
-API_VERSION = u'20120210'
+API_VERSION = u'20120219'
 
 # Library versioning matches supported foursquare API version
 __version__ = API_VERSION
@@ -73,9 +74,11 @@ class Foursquare(object):
         self.oauth = self.OAuth(client_id, client_secret, redirect_uri)
         # Set up endpoints
         self.base_requester = self.Requester(client_id, client_secret, access_token, version)
-        for endpoint in ['Users', 'Venues', 'Checkins', 'Tips', 'Lists', 'Photos', 'Settings', 'Specials', 'Events']:
-            endpoint_obj = getattr(self, endpoint)(self.base_requester)
-            setattr(self, endpoint_obj.endpoint, endpoint_obj)
+        # Dynamically enable all endpoints supported
+        for name, endpoint in inspect.getmembers(self):
+            if inspect.isclass(endpoint) and issubclass(endpoint, self._Endpoint) and (endpoint is not self._Endpoint):
+                endpoint_instance = endpoint(self.base_requester)
+                setattr(self, endpoint_instance.endpoint, endpoint_instance)
 
     def set_access_token(self, access_token):
         """Update the access token to use"""
@@ -576,6 +579,23 @@ class Foursquare(object):
         def search(self, params):
             """https://developer.foursquare.com/docs/events/search"""
             return self.GET(u'search', params)
+
+
+    class Pages(_Endpoint):
+        """Pages specific endpoint"""
+        endpoint = u'pages'
+
+        def __call__(self, USER_ID):
+            """https://developer.foursquare.com/docs/pages/pages"""
+            return self.GET(unicode(USER_ID))
+
+        def search(self, params):
+            """https://developer.foursquare.com/docs/pages/search"""
+            return self.GET(u'search', params)
+
+        def venues(self, PAGE_ID, params={}):
+            """https://developer.foursquare.com/docs/pages/venues"""
+            return self.GET(u'{PAGE_ID}/venues'.format(PAGE_ID=PAGE_ID), params)
 
 
 
