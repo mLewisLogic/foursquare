@@ -622,7 +622,6 @@ def _process_request_with_httplib2(url, data=None):
     """Make the request and handle exception processing"""
     h = httplib2.Http()
     try:
-        log.debug(data)
         headers = {}
         if data:
             headers['Content-Type'] = 'application/x-www-form-urlencoded'
