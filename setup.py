@@ -13,7 +13,11 @@ setup(
     author='Mike Lewis',
     author_email='mike@fondu.com',
     url='http://github.com/mLewisLogic/foursquare',
-    description='Full-service library for Foursquare V2 API',
+    description="""
+        An advanced, but easy to use foursquare wrapper library that handles OAuth, automatic retries, and other niceties.
+        
+        See: http://github.com/mLewisLogic/foursquare
+    """,
     long_description=open('./readme.md', 'r').read(),
     download_url='http://github.com/mLewisLogic/foursquare/tarball/master',
     classifiers=[
