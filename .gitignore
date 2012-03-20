@@ -1,3 +1,7 @@
+#Pypi
+/build
+/dist
+
 # Do not wants
 *.py[c|o]
 *.egg-info
