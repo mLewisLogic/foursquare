@@ -641,11 +641,9 @@ class Foursquare(object):
 
         def get_next(self):
             """ Get the next multi response and verify"""
-            if not self.has_remaining:
-                if not self.requester.get_requests:
-                    return None
+            if not self.responses and self.requester.get_requests:
                 self.responses = self.get_all()['responses']
-            if not self.has_remaining:
+            if not self.responses:
                 return None
             response = self.responses.pop(0)
             meta = response.get('meta')
