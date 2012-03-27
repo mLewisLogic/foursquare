@@ -160,12 +160,13 @@ class Foursquare(object):
             return self._request(url)
 
         def set_multi_get(self, path, params={}):
+            """ Add multi request to list and return the number of requests added """
             url = '{path}?{params}'.format(
-              path=path,
-              params=urllib.urlencode(params)
+                path=path,
+                params=urllib.urlencode(params)
             )
             self.get_requests.append(url)
-            return
+            return len(self.get_requests)
 
         def POST(self, path, params={}):
             """POST request that returns processed data"""
