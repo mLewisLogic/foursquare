@@ -163,8 +163,6 @@ class Foursquare(object):
             return self._request(url)
 
         def set_multi_get(self, path, params={}):
-            if len(self.get_requests) == NUM_MULTI_REQUESTS:
-              raise FoursquareException(u'Too many multi request, maximum is {0}'.format(NUM_MULTI_REQUESTS))
             url = '{path}?{params}'.format(
               path=path,
               params=urllib.urlencode(params)
@@ -630,22 +628,24 @@ class Foursquare(object):
     class Multi(_Endpoint):
         """Multi request endpoint handler"""
         endpoint = 'multi'
-        responses = list()
+        get_responses = list()
 
         def __len__(self):
           return len(self.requester.get_requests)
 
         @property
         def has_remaining(self):
-          return True if self.responses or self.requester.get_requests else False
+          return True if self.get_responses or self.requester.get_requests else False
 
-        def get_next(self):
-            """ Get the next multi response and verify"""
-            if not self.responses and self.requester.get_requests:
-                self.responses = self.get_all()['responses']
-            if not self.responses:
+        def next(self):
+            """ Get the response of the first request made """
+            if self.requester.get_requests and not self.get_responses:
+                # assume that user doesn't care about the number of api calls made and just get the responses
+                self.get()
+            if not self.get_responses:
+                # should probably throw an exception here but need to play with some use cases first
                 return None
-            response = self.responses.pop(0)
+            response = self.get_responses.pop(0)
             meta = response.get('meta')
             if meta:
                 code = meta.get('code')
@@ -654,14 +654,19 @@ class Foursquare(object):
             _check_meta(response)
 
 
-        def get_all(self):
-            """ Return all responses regardless of their status code """
-            params = {
-                'requests' : ','.join(self.requester.get_requests)
-            }
-            self.requester.get_requests = list()
-            self.responses = list()
-            return self.requester.GET('/{endpoint}'.format(endpoint=self.endpoint), params)
+        def get(self):
+            """ Fetch all queued multi get requests and return the number of api calls made """
+            call_count = 0
+            while self.requester.get_requests:
+                call_count += 1
+                requests = self.requester.get_requests[:NUM_MULTI_REQUESTS]
+                params = {
+                    'requests' : ','.join(requests)
+                }
+                responses = self.requester.GET('/{endpoint}'.format(endpoint=self.endpoint), params)
+                self.get_responses.extend(responses['responses'])
+                del(self.requester.get_requests[:NUM_MULTI_REQUESTS])
+            return call_count
 
 
 """
