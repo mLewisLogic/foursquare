@@ -637,7 +637,7 @@ class Foursquare(object):
 
         @property
         def has_remaining(self):
-          return True if self.responses else False
+          return True if self.responses or self.requester.get_requests else False
 
         def get_next(self):
             """ Get the next multi response and verify"""
@@ -650,10 +650,10 @@ class Foursquare(object):
             response = self.responses.pop(0)
             meta = response.get('meta')
             if meta:
-              code = meta.get('code')
-              if code == 200:
-                  return response.get('response')
-              _check_meta(response)
+                code = meta.get('code')
+                if code == 200:
+                    return response.get('response')
+            _check_meta(response)
 
 
         def get_all(self):
