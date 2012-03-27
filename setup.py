@@ -28,6 +28,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         'httplib2',
+        'poster'
     ],
     license='MIT License',
     keywords='foursquare api',
