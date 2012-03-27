@@ -92,9 +92,6 @@ class Foursquare(object):
         """Update the access token to use"""
         self.base_requester.set_token(access_token)
 
-    def get_multi(self):
-        return self.multi.get_all()
-
     class OAuth(object):
         """Handles OAuth authentication procedures and helps retrieve tokens"""
         def __init__(self, client_id, client_secret, redirect_uri):
