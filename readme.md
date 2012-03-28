@@ -15,6 +15,7 @@ Features:
 * Full endpoint coverage (non-merchant)
 * Full test coverage
 * Useful exception classes
+* Multi support (via beichhor)
 
 Dependencies:
 
