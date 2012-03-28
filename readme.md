@@ -125,6 +125,7 @@ Note: endpoint methods map one-to-one with foursquare's endpoints
     venues.events()
     venues.herenow()
     venues.listed()
+    venues.menu()
     venues.photos()
     venues.similar()
     venues.tips()
@@ -176,6 +177,8 @@ Note: endpoint methods map one-to-one with foursquare's endpoints
     events()
     events.categories()
     events.search()
+    
+    multi()
 
 ## Improvements
 What else would you like this library to do? Let me know. Feel free to send pull requests for any improvements you make.

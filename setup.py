@@ -17,7 +17,7 @@ setup(
     long_description=open('./readme.txt', 'r').read(),
     download_url='http://github.com/mLewisLogic/foursquare/tarball/master',
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'Natural Language :: English',
         'Operating System :: OS Independent',

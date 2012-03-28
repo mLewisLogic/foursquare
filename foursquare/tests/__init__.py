@@ -26,7 +26,7 @@ class BaseEnpdointTestCase(unittest.TestCase):
     default_specialid = u'4e0debea922e6f94b1410bb7'
     default_special_venueid = u'4e0deab3922e6f94b1410af3'
     default_eventid = u'4e173d2cbd412187aabb3c04'
-    default_pageid = u'AVNU234'
+    default_pageid = u'1070527'
 
 class BaseAuthenticationTestCase(BaseEnpdointTestCase):
     def setUp(self):

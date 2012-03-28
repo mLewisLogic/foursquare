@@ -29,7 +29,7 @@ except ImportError:
 
 
 # Default API version. Move this forward as the library is maintained and kept current
-API_VERSION = '20120219'
+API_VERSION = '20120328'
 
 # Library versioning matches supported foursquare API version
 __version__ = API_VERSION
@@ -39,9 +39,11 @@ AUTH_ENDPOINT = 'https://foursquare.com/oauth2/authenticate'
 TOKEN_ENDPOINT = 'https://foursquare.com/oauth2/access_token'
 API_ENDPOINT = 'https://api.foursquare.com/v2'
 
+# Number of times to retry http requests
 NUM_REQUEST_RETRIES = 3
 
-NUM_MULTI_REQUESTS = 5
+# Max number of sub-requests per multi request
+MAX_MULTI_REQUESTS = 5
 
 
 # Generic foursquare exception
@@ -140,7 +142,7 @@ class Foursquare(object):
             self.client_secret = client_secret
             self.set_token(access_token)
             self.version = version if version else API_VERSION
-            self.get_requests = list()
+            self.multi_requests = list()
 
         def set_token(self, access_token):
             """Set the OAuth token for this requester"""
@@ -149,8 +151,10 @@ class Foursquare(object):
 
         def GET(self, path, params={}, **kwargs):
             """GET request that returns processed data"""
+            # Short-circuit multi requests
             if kwargs.get('multi') is True:
-              return self.set_multi_get(path, params)
+                return self.add_multi_request(path, params)
+            # Continue processing normal requests
             params = self._enrich_params(params)
             url = '{API_ENDPOINT}{path}?{params}'.format(
                 API_ENDPOINT=API_ENDPOINT,
@@ -159,14 +163,14 @@ class Foursquare(object):
             )
             return self._request(url)
 
-        def set_multi_get(self, path, params={}):
-            """ Add multi request to list and return the number of requests added """
+        def add_multi_request(self, path, params={}):
+            """Add multi request to list and return the number of requests added"""
             url = '{path}?{params}'.format(
                 path=path,
                 params=urllib.urlencode(params)
             )
-            self.get_requests.append(url)
-            return len(self.get_requests)
+            self.multi_requests.append(url)
+            return len(self.multi_requests)
 
         def POST(self, path, params={}):
             """POST request that returns processed data"""
@@ -203,15 +207,17 @@ class Foursquare(object):
             """Stores the request function for retrieving data"""
             self.requester = requester
 
-        def _expanded_path(self, path):
+        def _expanded_path(self, path=None):
             """Gets the expanded path, given this endpoint"""
-            return '/{endpoint}/{path}'.format(endpoint=self.endpoint, path=path)
+            return '/{expanded_path}'.format(
+                expanded_path='/'.join(p for p in (self.endpoint, path) if p)
+            )
 
-        def GET(self, path, *args, **kwargs):
+        def GET(self, path=None, *args, **kwargs):
             """Use the requester to get the data"""
             return self.requester.GET(self._expanded_path(path), *args, **kwargs)
 
-        def POST(self, path, *args, **kwargs):
+        def POST(self, path=None, *args, **kwargs):
             """Use the requester to post the data"""
             return self.requester.POST(self._expanded_path(path), *args, **kwargs)
 
@@ -361,9 +367,11 @@ class Foursquare(object):
         def listed(self, VENUE_ID, params={}, multi=False):
             """https://developer.foursquare.com/docs/venues/listed"""
             return self.GET('{VENUE_ID}/listed'.format(VENUE_ID=VENUE_ID), params, multi=multi)
+
         def menu(self, VENUE_ID, params={}, multi=False):
             """https://developer.foursquare.com/docs/venues/menu"""
             return self.GET('{VENUE_ID}/menu'.format(VENUE_ID=VENUE_ID), params, multi=multi)
+
         def photos(self, VENUE_ID, params, multi=False):
             """https://developer.foursquare.com/docs/venues/photos"""
             return self.GET('{VENUE_ID}/photos'.format(VENUE_ID=VENUE_ID), params, multi=multi)
@@ -626,45 +634,27 @@ class Foursquare(object):
     class Multi(_Endpoint):
         """Multi request endpoint handler"""
         endpoint = 'multi'
-        get_responses = list()
 
         def __len__(self):
-          return len(self.requester.get_requests)
+          return len(self.requester.multi_requests)
 
-        @property
-        def has_remaining(self):
-          return True if self.get_responses or self.requester.get_requests else False
-
-        def next(self):
-            """ Get the response of the first request made """
-            if self.requester.get_requests and not self.get_responses:
-                # assume that user doesn't care about the number of api calls made and just get the responses
-                self.get()
-            if not self.get_responses:
-                # should probably throw an exception here but need to play with some use cases first
-                return None
-            response = self.get_responses.pop(0)
-            meta = response.get('meta')
-            if meta:
-                code = meta.get('code')
-                if code == 200:
-                    return response.get('response')
-            _check_meta(response)
-
-
-        def get(self):
-            """ Fetch all queued multi get requests and return the number of api calls made """
-            call_count = 0
-            while self.requester.get_requests:
-                call_count += 1
-                requests = self.requester.get_requests[:NUM_MULTI_REQUESTS]
+        def __call__(self):
+            """Process the current queue of multi's"""
+            while self.requester.multi_requests:
+                # Pull n requests from the multi-request queue
+                requests = self.requester.multi_requests[:MAX_MULTI_REQUESTS]
+                del(self.requester.multi_requests[:MAX_MULTI_REQUESTS])
+                # Process the 4sq multi request
                 params = {
-                    'requests' : ','.join(requests)
+                    'requests': ','.join(requests),
                 }
-                responses = self.requester.GET('/{endpoint}'.format(endpoint=self.endpoint), params)
-                self.get_responses.extend(responses['responses'])
-                del(self.requester.get_requests[:NUM_MULTI_REQUESTS])
-            return call_count
+                responses = self.GET(params=params)['responses']
+                # ... and yield out each individual response
+                for response in responses:
+                    # Make sure the response was valid
+                    _check_response(response)
+                    yield response['response']
+
 
 
 """
@@ -693,20 +683,29 @@ def _process_request_with_httplib2(url, data=None):
             headers = {}
             method = 'GET'
         response, body = h.request(url, method, headers=headers, body=data)
-        data = json.loads(body)
+        data = _json_to_data(body)
         # Default case, Got proper response
         if response.status == 200:
             return data
-        # Non-200 response. Handle the error
-        _check_meta(data)
+        return _check_response(data)
     except httplib2.HttpLib2Error, e:
         log.error(e)
         raise FoursquareException(u'Error connecting with foursquare API')
 
+def _json_to_data(s):
+    """Convert a response string to data"""
+    try:
+        return json.loads(s)
+    except ValueError, e:
+        log.error('Invalid response: {0}'.format(e))
+        raise FoursquareException(e)
 
-def _check_meta(data):
+def _check_response(data):
+    """Processes the response data"""
+    # Check the meta-data for why this request failed
     meta = data.get('meta')
     if meta:
+        if meta.get('code') == 200: return data
         exc = error_types.get(meta.get('errorType'))
         if exc:
             raise exc(meta.get('errorDetail'))
@@ -714,4 +713,5 @@ def _check_meta(data):
             log.error(u'Unknown error type: {0}'.format(meta.get('errorType')))
             raise FoursquareException(meta.get('errorDetail'))
     else:
-        log.error(u'Response format invalid, missing meta') # body is printed in warning above
+        log.error(u'Response format invalid, missing meta property') # body is printed in warning above
+        raise FoursquareException('Missing meta')
