@@ -8,7 +8,7 @@ import foursquare
 version = str(foursquare.__version__)
 
 setup(
-    name=u'foursquare',
+    name='foursquare',
     version=version,
     author='Mike Lewis',
     author_email='mike@fondu.com',
