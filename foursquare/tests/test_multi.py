@@ -28,7 +28,16 @@ class MultiEndpointTestCase(BaseAuthenticatedEnpdointTestCase):
         self.api.tips(self.default_tipid, multi=True)
         self.api.lists(self.default_listid, multi=True)
         self.api.photos(self.default_photoid, multi=True)
-        # Now make sure the multi call comes back with what we want
+        # We are expecting certain responses...
         expected_responses = ('user', 'leaderboard', 'badges', 'lists', 'categories', 'recent', 'tip', 'list', 'photo',)
+        # Make sure our utility functions are working
+        assert len(self.api.multi) == len(expected_responses), u'{0} requests queued. Expecting {1}'.format(
+            len(self.api.multi),
+            len(expected_responses)
+        )
+        assert self.api.multi.num_required_api_calls == 2, u'{0} required API calls. Expecting 2'.format(
+            self.api.multi.num_required_api_calls
+        )
+        # Now make sure the multi call comes back with what we want
         for response, expected_response in itertools.izip(self.api.multi(), expected_responses):
             assert expected_response in response, '{0} not in response'.format(expected_response)

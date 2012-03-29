@@ -12,6 +12,7 @@ import contextlib
 import cStringIO as StringIO
 import datetime
 import inspect
+import math
 import poster
 import re
 import socket
@@ -639,7 +640,13 @@ class Foursquare(object):
           return len(self.requester.multi_requests)
 
         def __call__(self):
-            """Process the current queue of multi's"""
+            """
+            Generator to process the current queue of multi's
+            
+            note: This generator with yield both data, and FoursquareException's
+            The code processing this sequence must check the yields for their type.
+            The exceptions should be handled by the calling code, or raised.
+            """
             while self.requester.multi_requests:
                 # Pull n requests from the multi-request queue
                 requests = self.requester.multi_requests[:MAX_MULTI_REQUESTS]
@@ -652,8 +659,17 @@ class Foursquare(object):
                 # ... and yield out each individual response
                 for response in responses:
                     # Make sure the response was valid
-                    _check_response(response)
-                    yield response['response']
+                    try:
+                        _check_response(response)
+                        yield response['response']
+                    except FoursquareException, e:
+                        yield e
+
+
+        @property
+        def num_required_api_calls(self):
+            """Returns the expected number of API calls to process"""
+            return int(math.ceil(len(self.requester.multi_requests) / float(MAX_MULTI_REQUESTS)))
 
 
 
