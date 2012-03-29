@@ -665,7 +665,6 @@ class Foursquare(object):
                     except FoursquareException, e:
                         yield e
 
-
         @property
         def num_required_api_calls(self):
             """Returns the expected number of API calls to process"""
