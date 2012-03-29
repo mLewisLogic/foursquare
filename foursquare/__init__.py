@@ -634,27 +634,29 @@ class Foursquare(object):
     class Multi(_Endpoint):
         """Multi request endpoint handler"""
         endpoint = 'multi'
+        responses = []
 
         def __len__(self):
-          return len(self.requester.multi_requests)
+          return len(self.requester.multi_requests) + len(self.responses)
 
         def __call__(self):
             """Process the current queue of multi's"""
-            while self.requester.multi_requests:
-                # Pull n requests from the multi-request queue
-                requests = self.requester.multi_requests[:MAX_MULTI_REQUESTS]
-                del(self.requester.multi_requests[:MAX_MULTI_REQUESTS])
-                # Process the 4sq multi request
-                params = {
-                    'requests': ','.join(requests),
-                }
-                responses = self.GET(params=params)['responses']
+            while self.requester.multi_requests or self.responses:
+                if not self.responses and self.requester.multi_requests:
+                  # Pull n requests from the multi-request queue
+                  requests = self.requester.multi_requests[:MAX_MULTI_REQUESTS]
+                  del(self.requester.multi_requests[:MAX_MULTI_REQUESTS])
+                  # Process the 4sq multi request
+                  params = {
+                      'requests': ','.join(requests),
+                  }
+                  self.responses += self.GET(params=params)['responses']
                 # ... and yield out each individual response
-                for response in responses:
+                while self.responses:
+                    response = self.responses.pop(0)
                     # Make sure the response was valid
                     _check_response(response)
                     yield response['response']
-
 
 
 """
@@ -713,5 +715,5 @@ def _check_response(data):
             log.error(u'Unknown error type: {0}'.format(meta.get('errorType')))
             raise FoursquareException(meta.get('errorDetail'))
     else:
-        log.error(u'Response format invalid, missing meta property') # body is printed in warning above
+        log.error(u'Response format invalid: {0}'.format(data))
         raise FoursquareException('Missing meta')
