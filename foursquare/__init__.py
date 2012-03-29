@@ -658,6 +658,12 @@ class Foursquare(object):
                     _check_response(response)
                     yield response['response']
 
+        @property
+        def num_api_calls(self):
+          return len(self.requester.multi_requests) // MAX_MULTI_REQUESTS + (1 if len(self.requester.multi_requests) % MAX_MULTI_REQUESTS else 0)
+          ## OR ##
+          # import math
+          # math.ceil(len(self.requester.multi_requests) / MAX_MULTI_REQUESTS)
 
 """
 Network helper functions
