@@ -14,7 +14,7 @@ setup(
     author_email='mike@fondu.com',
     url='http://github.com/mLewisLogic/foursquare',
     description='easy-as-pie foursquare wrapper library',
-    long_description=open('./readme.txt', 'r').read(),
+    long_description=open('./README.txt', 'r').read(),
     download_url='http://github.com/mLewisLogic/foursquare/tarball/master',
     classifiers=[
         'Development Status :: 5 - Production/Stable',

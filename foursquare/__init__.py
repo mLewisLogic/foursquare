@@ -13,7 +13,6 @@ import cStringIO as StringIO
 import datetime
 import inspect
 import math
-import poster
 import re
 import socket
 import time
@@ -21,16 +20,19 @@ import urllib
 import urllib2
 import urlparse
 
-# Might not be present during initial install but we need to import for the version #
+# 3rd party libraries that might not be present during initial install
+#  but we need to import for the version #
 try:
     import httplib2
+    import poster
 except ImportError:
     pass
 
 
 
+
 # Default API version. Move this forward as the library is maintained and kept current
-API_VERSION = '20120328'
+API_VERSION = '20120418'
 
 # Library versioning matches supported foursquare API version
 __version__ = API_VERSION
@@ -57,6 +59,7 @@ class NotAuthorized(FoursquareException): pass
 class RateLimitExceeded(FoursquareException): pass
 class Deprecated(FoursquareException): pass
 class ServerError(FoursquareException): pass
+class FailedGeocode(FoursquareException): pass
 class Other(FoursquareException): pass
 
 error_types = {
@@ -67,6 +70,7 @@ error_types = {
     'rate_limit_exceeded': RateLimitExceeded,
     'deprecated': Deprecated,
     'server_error': ServerError,
+    'failed_geocode': FailedGeocode,
     'other': Other,
 }
 

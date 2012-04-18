@@ -1,0 +1,3 @@
+include *.txt
+include *.md
+exclude foursquare/tests/_creds.py
