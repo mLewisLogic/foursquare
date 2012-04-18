@@ -2,19 +2,20 @@
 # -*- coding: UTF-8 -*-
 # (c) 2012 Mike Lewis
 
+import os
 from setuptools import setup, find_packages
 
-import foursquare
-version = str(foursquare.__version__)
+readme_file = os.path.join(os.path.dirname(__file__), 'readme.txt')
+readme_contents = open(readme_file).read()
 
 setup(
     name='foursquare',
-    version=version,
+    version='20120328',
     author='Mike Lewis',
     author_email='mike@fondu.com',
     url='http://github.com/mLewisLogic/foursquare',
     description='easy-as-pie foursquare wrapper library',
-    long_description=open('./readme.txt', 'r').read(),
+    long_description=readme_contents,
     download_url='http://github.com/mLewisLogic/foursquare/tarball/master',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
