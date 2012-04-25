@@ -8,17 +8,11 @@ try:
 except ImportError:
     import json
 
-import contextlib
 import cStringIO as StringIO
-import datetime
 import inspect
 import math
-import re
-import socket
 import time
 import urllib
-import urllib2
-import urlparse
 
 # 3rd party libraries that might not be present during initial install
 #  but we need to import for the version #
@@ -646,7 +640,7 @@ class Foursquare(object):
         def __call__(self):
             """
             Generator to process the current queue of multi's
-            
+
             note: This generator with yield both data, and FoursquareException's
             The code processing this sequence must check the yields for their type.
             The exceptions should be handled by the calling code, or raised.
