@@ -388,7 +388,7 @@ class Foursquare(object):
         """
         def flag(self, VENUE_ID, params):
             """https://developer.foursquare.com/docs/venues/flag"""
-            return self.POST('{VENUE_ID}/edit'.format(VENUE_ID=VENUE_ID), params)
+            return self.POST('{VENUE_ID}/flag'.format(VENUE_ID=VENUE_ID), params)
 
         def marktodo(self, VENUE_ID, params={}):
             """https://developer.foursquare.com/docs/venues/edit"""
