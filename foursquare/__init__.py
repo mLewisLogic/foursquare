@@ -363,6 +363,10 @@ class Foursquare(object):
             """https://developer.foursquare.com/docs/venues/herenow"""
             return self.GET('{VENUE_ID}/herenow'.format(VENUE_ID=VENUE_ID), params, multi=multi)
 
+        def links(self, VENUE_ID, params={}, multi=False):
+            """https://developer.foursquare.com/docs/venues/links"""
+            return self.GET('{VENUE_ID}/links'.format(VENUE_ID=VENUE_ID), params, multi=multi)
+
         def listed(self, VENUE_ID, params={}, multi=False):
             """https://developer.foursquare.com/docs/venues/listed"""
             return self.GET('{VENUE_ID}/listed'.format(VENUE_ID=VENUE_ID), params, multi=multi)
