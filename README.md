@@ -22,13 +22,24 @@ Dependencies:
 * httplib2
 * simplejson (optional)
 
+## Installation
+
+    pip install foursquare
+
+or
+
+    easy_install foursquare
+
+Depending upon your system and virtualenv settings, these may require sudo permissions.
+
+
 ## Usage
 
 ### Authentication
 
     # Construct the client object
     client = foursquare.Foursquare(client_id='YOUR_CLIENT_ID', client_secret='YOUR_CLIENT_SECRET', redirect_uri='http://fondu.com/oauth/authorize')
-    
+
     # Build the authorization url for your app
     auth_uri = client.oauth.auth_url()
 
@@ -36,10 +47,10 @@ Redirect your user to the address *auth_uri* and let them authorize your app. Th
 
     # Interrogate foursquare's servers to get the user's access_token
     access_token = client.oauth.get_token('XX_CODE_RETURNED_IN_REDIRECT_XX')
-    
+
     # Apply the returned access token to the client
     client.set_access_token(access_token)
-    
+
     # Get the user's data
     user = client.users()
 
@@ -116,7 +127,7 @@ Note: endpoint methods map one-to-one with foursquare's endpoints
     users.setpings()
     users.unfriend()
     users.update()
-    
+
     venues()
     venues.add()
     venues.categories()
@@ -133,13 +144,13 @@ Note: endpoint methods map one-to-one with foursquare's endpoints
     venues.flag()
     venues.marktodo()
     venues.proposeedit()
-    
+
     checkins()
     checkins.add()
     checkins.recent()
     checkins.addcomment()
     checkins.deletecomment()
-    
+
     tips()
     tips.add()
     tips.search()
@@ -148,7 +159,7 @@ Note: endpoint methods map one-to-one with foursquare's endpoints
     tips.markdone()
     tips.marktodo()
     tips.unmark()
-    
+
     lists()
     lists.add()
     lists.followers()
@@ -163,22 +174,22 @@ Note: endpoint methods map one-to-one with foursquare's endpoints
     lists.unfollow()
     lists.update()
     lists.updateitem()
-    
+
     photos()
     photos.add()
-    
+
     settings()
     settings.all()
     settings.set()
-    
+
     specials()
     specials.search()
     specials.flag()
-    
+
     events()
     events.categories()
     events.search()
-    
+
     multi()
 
 ## Improvements
