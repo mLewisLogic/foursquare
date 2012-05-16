@@ -383,6 +383,10 @@ class Foursquare(object):
             """https://developer.foursquare.com/docs/venues/similar"""
             return self.GET('{VENUE_ID}/similar'.format(VENUE_ID=VENUE_ID), multi=multi)
 
+        def stats(self, VENUE_ID, multi=False):
+            """https://developer.foursquare.com/docs/venues/stats"""
+            return self.GET('{VENUE_ID}/stats'.format(VENUE_ID=VENUE_ID), multi=multi)
+
         def tips(self, VENUE_ID, params={}, multi=False):
             """https://developer.foursquare.com/docs/venues/tips"""
             return self.GET('{VENUE_ID}/tips'.format(VENUE_ID=VENUE_ID), params, multi=multi)
