@@ -433,6 +433,10 @@ class Foursquare(object):
         def deletecomment(self, CHECKIN_ID, params):
             """https://developer.foursquare.com/docs/checkins/deletecomment"""
             return self.POST('{CHECKIN_ID}/deletecomment'.format(CHECKIN_ID=CHECKIN_ID), params)
+            
+        def addpost(self, CHECKIN_ID, params):
+            """https://developer.foursquare.com/docs/checkins/addpost"""
+            return self.POST('{CHECKIN_ID}/addpost'.format(CHECKIN_ID=CHECKIN_ID), params)
 
 
     class Tips(_Endpoint):
