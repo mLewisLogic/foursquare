@@ -26,7 +26,7 @@ except ImportError:
 
 
 # Default API version. Move this forward as the library is maintained and kept current
-API_VERSION = '20120430'
+API_VERSION = '20120608' # Hold off on th 20120609 boundary until more dox role out from 4sq
 
 # Library versioning matches supported foursquare API version
 __version__ = API_VERSION
@@ -430,13 +430,17 @@ class Foursquare(object):
             """https://developer.foursquare.com/docs/checkins/addcomment"""
             return self.POST('{CHECKIN_ID}/addcomment'.format(CHECKIN_ID=CHECKIN_ID), params)
 
-        def deletecomment(self, CHECKIN_ID, params):
-            """https://developer.foursquare.com/docs/checkins/deletecomment"""
-            return self.POST('{CHECKIN_ID}/deletecomment'.format(CHECKIN_ID=CHECKIN_ID), params)
-            
         def addpost(self, CHECKIN_ID, params):
             """https://developer.foursquare.com/docs/checkins/addpost"""
             return self.POST('{CHECKIN_ID}/addpost'.format(CHECKIN_ID=CHECKIN_ID), params)
+
+        def deletecomment(self, CHECKIN_ID, params):
+            """https://developer.foursquare.com/docs/checkins/deletecomment"""
+            return self.POST('{CHECKIN_ID}/deletecomment'.format(CHECKIN_ID=CHECKIN_ID), params)
+
+        def reply(self, CHECKIN_ID, params):
+            """https://developer.foursquare.com/docs/checkins/reply"""
+            return self.POST('{CHECKIN_ID}/reply'.format(CHECKIN_ID=CHECKIN_ID), params)
 
 
     class Tips(_Endpoint):

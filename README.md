@@ -149,7 +149,9 @@ Note: endpoint methods map one-to-one with foursquare's endpoints
     checkins.add()
     checkins.recent()
     checkins.addcomment()
+    checkins.addpost()
     checkins.deletecomment()
+    checkins.reply()
 
     tips()
     tips.add()
