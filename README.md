@@ -80,7 +80,7 @@ or
     client.users.checkins()
 ##### [Get your most recent checkin](https://developer.foursquare.com/docs/users/checkins)
     client.users.checkins(params={'limit': 1})
-##### Get *all* of your friends' checkins (not a native 4sq call)
+##### Get *all* of a friend's checkins (not a native 4sq call)
     client.users.all_checkins('1183247')
 ##### [Approve a friend's friend request](https://developer.foursquare.com/docs/users/approve)
     client.users.approve('1183247')
