@@ -734,7 +734,9 @@ def _check_response(data):
     # Check the meta-data for why this request failed
     meta = data.get('meta')
     if meta:
-        if meta.get('code') == 200: return data
+        # Account for foursquare conflicts
+        # see: https://developer.foursquare.com/overview/responses
+        if meta.get('code') in (200, 409): return data
         exc = error_types.get(meta.get('errorType'))
         if exc:
             raise exc(meta.get('errorDetail'))
