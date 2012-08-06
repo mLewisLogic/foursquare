@@ -26,7 +26,7 @@ except ImportError:
 
 
 # Default API version. Move this forward as the library is maintained and kept current
-API_VERSION = '20120430'
+API_VERSION = '20120608' # Hold off on th 20120609 boundary until more dox role out from 4sq
 
 # Library versioning matches supported foursquare API version
 __version__ = API_VERSION
@@ -383,6 +383,10 @@ class Foursquare(object):
             """https://developer.foursquare.com/docs/venues/similar"""
             return self.GET('{VENUE_ID}/similar'.format(VENUE_ID=VENUE_ID), multi=multi)
 
+        def stats(self, VENUE_ID, multi=False):
+            """https://developer.foursquare.com/docs/venues/stats"""
+            return self.GET('{VENUE_ID}/stats'.format(VENUE_ID=VENUE_ID), multi=multi)
+
         def tips(self, VENUE_ID, params={}, multi=False):
             """https://developer.foursquare.com/docs/venues/tips"""
             return self.GET('{VENUE_ID}/tips'.format(VENUE_ID=VENUE_ID), params, multi=multi)
@@ -426,9 +430,17 @@ class Foursquare(object):
             """https://developer.foursquare.com/docs/checkins/addcomment"""
             return self.POST('{CHECKIN_ID}/addcomment'.format(CHECKIN_ID=CHECKIN_ID), params)
 
+        def addpost(self, CHECKIN_ID, params):
+            """https://developer.foursquare.com/docs/checkins/addpost"""
+            return self.POST('{CHECKIN_ID}/addpost'.format(CHECKIN_ID=CHECKIN_ID), params)
+
         def deletecomment(self, CHECKIN_ID, params):
             """https://developer.foursquare.com/docs/checkins/deletecomment"""
             return self.POST('{CHECKIN_ID}/deletecomment'.format(CHECKIN_ID=CHECKIN_ID), params)
+
+        def reply(self, CHECKIN_ID, params):
+            """https://developer.foursquare.com/docs/checkins/reply"""
+            return self.POST('{CHECKIN_ID}/reply'.format(CHECKIN_ID=CHECKIN_ID), params)
 
 
     class Tips(_Endpoint):
@@ -722,7 +734,9 @@ def _check_response(data):
     # Check the meta-data for why this request failed
     meta = data.get('meta')
     if meta:
-        if meta.get('code') == 200: return data
+        # Account for foursquare conflicts
+        # see: https://developer.foursquare.com/overview/responses
+        if meta.get('code') in (200, 409): return data
         exc = error_types.get(meta.get('errorType'))
         if exc:
             raise exc(meta.get('errorDetail'))
