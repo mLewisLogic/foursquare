@@ -343,6 +343,10 @@ class Foursquare(object):
             """https://developer.foursquare.com/docs/venues/explore"""
             return self.GET('explore', params, multi=multi)
 
+        def suggestcompletion(self, params, multi=False):
+            """https://developer.foursquare.com/docs/venues/suggestcompletion"""
+            return self.GET('suggestcompletion', params, multi=multi)
+
         MAX_SEARCH_LIMIT = 50
         def search(self, params, multi=False):
             """https://developer.foursquare.com/docs/venues/search"""
