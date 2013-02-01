@@ -5,8 +5,7 @@
 from setuptools import setup, find_packages
 
 import foursquare
-#version = str(foursquare.__version__)
-version = '20120716'
+version = str(foursquare.__version__)
 
 setup(
     name='foursquare',
