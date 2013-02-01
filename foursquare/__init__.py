@@ -519,7 +519,7 @@ class Foursquare(object):
 
         def suggesttip(self, LIST_ID, params, multi=False):
             """https://developer.foursquare.com/docs/lists/suggesttip"""
-            return self.GET('{LIST_ID}/suggestphoto'.format(LIST_ID=LIST_ID), params, multi=multi)
+            return self.GET('{LIST_ID}/suggesttip'.format(LIST_ID=LIST_ID), params, multi=multi)
 
         def suggestvenues(self, LIST_ID, multi=False):
             """https://developer.foursquare.com/docs/lists/suggestvenues"""
