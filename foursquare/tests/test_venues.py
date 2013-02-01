@@ -52,6 +52,11 @@ class VenuesEndpointTestCase(BaseAuthenticatedEnpdointTestCase):
         assert 'groups' in response
 
 
+    def test_managed(self):
+        response = self.api.venues.managed()
+        assert 'venues' in response
+
+
     def test_search(self):
         response = self.api.venues.search({'ll': self.default_geo})
         assert 'venues' in response
@@ -67,6 +72,11 @@ class VenuesEndpointTestCase(BaseAuthenticatedEnpdointTestCase):
     def test_search_browse(self):
         response = self.api.venues.search({'ll': self.default_geo, 'radius': self.default_geo_radius, 'intent': 'browse'})
         assert 'venues' in response
+
+
+    def test_suggestcompletion(self):
+        response = self.api.venues.suggestcompletion({'ll': self.default_geo, 'query': 'cof'})
+        assert 'minivenues' in response
 
 
     def test_trending(self):

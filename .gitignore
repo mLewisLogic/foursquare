@@ -9,5 +9,6 @@
 # Do not wants
 *.py[c|o]
 *.egg-info
+*.swp
 .coverage
 .Python

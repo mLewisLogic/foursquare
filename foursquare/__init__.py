@@ -26,7 +26,7 @@ except ImportError:
 
 
 # Default API version. Move this forward as the library is maintained and kept current
-API_VERSION = '20120608' # Hold off on th 20120609 boundary until more dox role out from 4sq
+API_VERSION = '20130131'
 
 # Library versioning matches supported foursquare API version
 __version__ = API_VERSION
@@ -343,14 +343,18 @@ class Foursquare(object):
             """https://developer.foursquare.com/docs/venues/explore"""
             return self.GET('explore', params, multi=multi)
 
-        def suggestcompletion(self, params, multi=False):
-            """https://developer.foursquare.com/docs/venues/suggestcompletion"""
-            return self.GET('suggestcompletion', params, multi=multi)
+        def managed(self, multi=False):
+            """https://developer.foursquare.com/docs/venues/managed"""
+            return self.GET('managed', multi=multi)
 
         MAX_SEARCH_LIMIT = 50
         def search(self, params, multi=False):
             """https://developer.foursquare.com/docs/venues/search"""
             return self.GET('search', params, multi=multi)
+
+        def suggestcompletion(self, params, multi=False):
+            """https://developer.foursquare.com/docs/venues/suggestcompletion"""
+            return self.GET('suggestcompletion', params, multi=multi)
 
         def trending(self, params, multi=False):
             """https://developer.foursquare.com/docs/venues/trending"""
