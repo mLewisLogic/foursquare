@@ -42,6 +42,9 @@ NUM_REQUEST_RETRIES = 3
 # Max number of sub-requests per multi request
 MAX_MULTI_REQUESTS = 5
 
+# Keyworded Arguments passed to the httplib2.Http() request
+HTTP_KWARGS = {}
+
 
 # Generic foursquare exception
 class FoursquareException(Exception): pass
@@ -710,7 +713,7 @@ def _request_with_retry(url, data=None):
 
 def _process_request_with_httplib2(url, data=None):
     """Make the request and handle exception processing"""
-    h = httplib2.Http()
+    h = httplib2.Http(**HTTP_KWARGS)
     try:
         if data:
             datagen, headers = poster.encode.multipart_encode(data)
