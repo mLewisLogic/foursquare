@@ -76,12 +76,12 @@ error_types = {
 class Foursquare(object):
     """foursquare V2 API wrapper"""
 
-    def __init__(self, client_id=None, client_secret=None, access_token=None, redirect_uri=None, version=None):
+    def __init__(self, client_id=None, client_secret=None, access_token=None, redirect_uri=None, version=None, lang=None):
         """Sets up the api object"""
         # Set up OAuth
         self.oauth = self.OAuth(client_id, client_secret, redirect_uri)
         # Set up endpoints
-        self.base_requester = self.Requester(client_id, client_secret, access_token, version)
+        self.base_requester = self.Requester(client_id, client_secret, access_token, version, lang)
         # Dynamically enable endpoints
         self._attach_endpoints()
 
@@ -138,13 +138,14 @@ class Foursquare(object):
 
     class Requester(object):
         """Api requesting object"""
-        def __init__(self, client_id=None, client_secret=None, access_token=None, version=None):
+        def __init__(self, client_id=None, client_secret=None, access_token=None, version=None, lang=None):
             """Sets up the api object"""
             self.client_id = client_id
             self.client_secret = client_secret
             self.set_token(access_token)
             self.version = version if version else API_VERSION
             self.multi_requests = list()
+            self.lang = lang
 
         def set_token(self, access_token):
             """Set the OAuth token for this requester"""
@@ -163,7 +164,7 @@ class Foursquare(object):
                 path=path,
                 params=urllib.urlencode(params)
             )
-            return self._request(url)
+            return self._request(url,lang=self.lang)
 
         def add_multi_request(self, path, params={}):
             """Add multi request to list and return the number of requests added"""
@@ -194,13 +195,13 @@ class Foursquare(object):
                 params['oauth_token'] = self.oauth_token
             return params
 
-        def _request(self, url, data=None):
+        def _request(self, url, data=None, lang=None):
             """Performs the passed request and returns meaningful data"""
             log.debug(u'{method} url: {url}{data}'.format(
                 method='POST' if data else 'GET',
                 url=url,
                 data=u'* {0}'.format(data) if data else u''))
-            return _request_with_retry(url, data)['response']
+            return _request_with_retry(url, data, lang)['response']
 
 
     class _Endpoint(object):
@@ -700,18 +701,18 @@ class Foursquare(object):
 """
 Network helper functions
 """
-def _request_with_retry(url, data=None):
+def _request_with_retry(url, data=None, lang=None):
     """Tries to load data from an endpoint using retries"""
     for i in xrange(NUM_REQUEST_RETRIES):
         try:
-            return _process_request_with_httplib2(url, data)
+            return _process_request_with_httplib2(url, data, lang)
         except FoursquareException, e:
             # Some errors don't bear repeating
             if e.__class__ in [InvalidAuth, ParamError, EndpointError, NotAuthorized, Deprecated]: raise
             if ((i + 1) == NUM_REQUEST_RETRIES): raise
         time.sleep(1)
 
-def _process_request_with_httplib2(url, data=None):
+def _process_request_with_httplib2(url, data=None, lang=None):
     """Make the request and handle exception processing"""
     h = httplib2.Http(**HTTP_KWARGS)
     try:
@@ -720,7 +721,10 @@ def _process_request_with_httplib2(url, data=None):
             data = ''.join(datagen)
             method = 'POST'
         else:
-            headers = {}
+            if lang:
+                headers = {"Accept-Language": lang}
+            else:
+                headers = {}
             method = 'GET'
         response, body = h.request(url, method, headers=headers, body=data)
         data = _json_to_data(body)
