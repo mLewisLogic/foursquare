@@ -674,7 +674,7 @@ class Foursquare(object):
             """
             Generator to process the current queue of multi's
 
-            note: This generator with yield both data, and FoursquareException's
+            note: This generator will yield both data and FoursquareException's
             The code processing this sequence must check the yields for their type.
             The exceptions should be handled by the calling code, or raised.
             """
