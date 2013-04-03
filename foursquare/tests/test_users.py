@@ -3,11 +3,11 @@
 # (c) 2012 Mike Lewis
 import logging; log = logging.getLogger(__name__)
 
-from . import BaseAuthenticatedEnpdointTestCase
+from . import BaseAuthenticatedEndpointTestCase
 
 
 
-class UsersEndpointTestCase(BaseAuthenticatedEnpdointTestCase):
+class UsersEndpointTestCase(BaseAuthenticatedEndpointTestCase):
     """
     General
     """

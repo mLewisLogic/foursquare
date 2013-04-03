@@ -10,11 +10,11 @@ try:
 except ImportError:
     print "Please create a creds.py file in this package, based upon creds.example.py"
 
-from . import BaseEnpdointTestCase
+from . import BaseEndpointTestCase
 
 
 
-class MultiLangTestCase(BaseEnpdointTestCase):
+class MultiLangTestCase(BaseEndpointTestCase):
     """
     General
     """

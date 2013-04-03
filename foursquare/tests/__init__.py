@@ -13,7 +13,7 @@ except ImportError:
 
 
 
-class BaseEnpdointTestCase(unittest.TestCase):
+class BaseEndpointTestCase(unittest.TestCase):
     default_geo = u'40.7,-74.0'
     default_geo_radius = 100
     default_userid = u'1070527'
@@ -28,7 +28,7 @@ class BaseEnpdointTestCase(unittest.TestCase):
     default_eventid = u'4e173d2cbd412187aabb3c04'
     default_pageid = u'1070527'
 
-class BaseAuthenticationTestCase(BaseEnpdointTestCase):
+class BaseAuthenticationTestCase(BaseEndpointTestCase):
     def setUp(self):
         self.api = foursquare.Foursquare(
             client_id=_creds.CLIENT_ID,
@@ -36,7 +36,7 @@ class BaseAuthenticationTestCase(BaseEnpdointTestCase):
             redirect_uri='http://example.org'
         )
 
-class BaseAuthenticatedEnpdointTestCase(BaseEnpdointTestCase):
+class BaseAuthenticatedEndpointTestCase(BaseEndpointTestCase):
     def setUp(self):
         self.api = foursquare.Foursquare(
             client_id=_creds.CLIENT_ID,
@@ -44,7 +44,7 @@ class BaseAuthenticatedEnpdointTestCase(BaseEnpdointTestCase):
             access_token=_creds.ACCESS_TOKEN
         )
 
-class BaseUserlessEnpdointTestCase(BaseEnpdointTestCase):
+class BaseUserlessEndpointTestCase(BaseEndpointTestCase):
     def setUp(self):
         self.api = foursquare.Foursquare(
             client_id=_creds.CLIENT_ID,

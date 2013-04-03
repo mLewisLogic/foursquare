@@ -5,11 +5,11 @@ import logging; log = logging.getLogger(__name__)
 
 import itertools
 
-from . import BaseAuthenticatedEnpdointTestCase
+from . import BaseAuthenticatedEndpointTestCase
 
 
 
-class MultiEndpointTestCase(BaseAuthenticatedEnpdointTestCase):
+class MultiEndpointTestCase(BaseAuthenticatedEndpointTestCase):
     """
     General
     """
