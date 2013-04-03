@@ -12,3 +12,8 @@
 *.swp
 .coverage
 .Python
+
+# IDEs
+.idea
+*.iml
+
