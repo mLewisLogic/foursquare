@@ -26,7 +26,7 @@ except ImportError:
 
 
 # Default API version. Move this forward as the library is maintained and kept current
-API_VERSION = '20130402'
+API_VERSION = '20130626'
 
 # Library versioning matches supported foursquare API version
 __version__ = API_VERSION
@@ -735,16 +735,18 @@ def _process_request_with_httplib2(url, headers={}, data=None):
             return data
         return _check_response(data)
     except httplib2.HttpLib2Error, e:
-        log.error(e)
-        raise FoursquareException(u'Error connecting with foursquare API: {0}'.format(e))
+        errmsg = u'Error connecting with foursquare API: {0}'.format(e)
+        log.error(errmsg)
+        raise FoursquareException(errmsg)
 
 def _json_to_data(s):
     """Convert a response string to data"""
     try:
         return json.loads(s)
     except ValueError, e:
-        log.error('Invalid response: {0}'.format(e))
-        raise FoursquareException(e)
+        errmsg = u'Invalid response: {0}'.format(e)
+        log.error(errmsg)
+        raise FoursquareException(errmsg)
 
 def _check_response(data):
     """Processes the response data"""
@@ -758,8 +760,10 @@ def _check_response(data):
         if exc:
             raise exc(meta.get('errorDetail'))
         else:
-            log.error(u'Unknown error type: {0}'.format(meta.get('errorType')))
-            raise FoursquareException(meta.get('errorDetail'))
+            errmsg = u'Unknown error. meta: {0}'.format(meta)
+            log.error(errmsg)
+            raise FoursquareException(errmsg)
     else:
-        log.error(u'Response format invalid, missing meta property') # body is printed in warning above
-        raise FoursquareException('Missing meta')
+        errmsg = u'Response format invalid, missing meta property. data: {0}'.format(data)
+        log.error(errmsg)
+        raise FoursquareException(errmsg)
