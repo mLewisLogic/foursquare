@@ -736,7 +736,7 @@ def _process_request_with_httplib2(url, headers={}, data=None):
         return _check_response(data)
     except httplib2.HttpLib2Error, e:
         log.error(e)
-        raise FoursquareException(u'Error connecting with foursquare API')
+        raise FoursquareException(u'Error connecting with foursquare API: {0}'.format(e))
 
 def _json_to_data(s):
     """Convert a response string to data"""
