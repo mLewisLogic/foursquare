@@ -130,7 +130,6 @@ class Foursquare(object):
             url = u'{TOKEN_ENDPOINT}?{params}'.format(
                 TOKEN_ENDPOINT=TOKEN_ENDPOINT,
                 params=urllib.urlencode(data))
-            log.debug(u'GET: {0}'.format(url))
             # Get the response from the token uri and attempt to parse
             response = _request_with_retry(url)
             return response.get('access_token')
