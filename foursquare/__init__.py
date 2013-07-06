@@ -200,11 +200,6 @@ class Foursquare(object):
             # If we specified a specific language, use that
             if self.lang:
                 headers['Accept-Language'] = self.lang
-            log.debug(u'{method} url: {url} headers:{headers} data:{data}'.format(
-                method='POST' if data else 'GET',
-                url=url,
-                headers=headers,
-                data=u'* {0}'.format(data) if data else u''))
             return _request_with_retry(url, headers, data)['response']
 
 
