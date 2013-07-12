@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
-# (c) 2012 Mike Lewis
+# (c) 2013 Mike Lewis
 
 from setuptools import setup, find_packages
 

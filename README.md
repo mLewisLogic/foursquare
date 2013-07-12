@@ -204,4 +204,4 @@ What else would you like this library to do? Let me know. Feel free to send pull
 
 ## License
 MIT License. See LICENSE
-Copyright (c) 2012 Mike Lewis
+Copyright (c) 2013 Mike Lewis
