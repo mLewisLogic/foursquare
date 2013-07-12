@@ -197,10 +197,14 @@ Note: endpoint methods map one-to-one with foursquare's endpoints
 ## Improvements
 What else would you like this library to do? Let me know. Feel free to send pull requests for any improvements you make.
 
-### Todo
+### TODO
 * Bring in new endpoints as they emerge
 * Test coverage for write methods
 * Merchant-specific endpoints (someday)
+
+
+## Code status
+* [![Build Status](https://travis-ci.org/mLewisLogic/foursquare.png?branch=master)](https://travis-ci.org/mLewisLogic/foursquare)
 
 ## License
 MIT License. See LICENSE
