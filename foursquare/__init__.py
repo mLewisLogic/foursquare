@@ -26,7 +26,7 @@ except ImportError:
 
 
 # Default API version. Move this forward as the library is maintained and kept current
-API_VERSION = '20130707'
+API_VERSION = '20130712'
 
 # Library versioning matches supported foursquare API version
 __version__ = API_VERSION
