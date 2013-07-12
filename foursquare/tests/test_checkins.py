@@ -3,7 +3,7 @@
 # (c) 2013 Mike Lewis
 import logging; log = logging.getLogger(__name__)
 
-from . import BaseAuthenticatedEndpointTestCase, BaseUserlessEndpointTestCase
+from . import BaseAuthenticatedEndpointTestCase
 
 
 
