@@ -23,32 +23,26 @@ class VenuesEndpointTestCase(BaseAuthenticatedEndpointTestCase):
 
     def test_explore(self):
         response = self.api.venues.explore({'ll': self.default_geo})
-        assert 'keywords' in response
         assert 'groups' in response
 
     def test_explore_radius(self):
         response = self.api.venues.explore({'ll': self.default_geo, 'radius': 30})
-        assert 'keywords' in response
         assert 'groups' in response
 
     def test_explore_section(self):
         response = self.api.venues.explore({'ll': self.default_geo, 'section': 'coffee'})
-        assert 'keywords' in response
         assert 'groups' in response
 
     def test_explore_query(self):
         response = self.api.venues.explore({'ll': self.default_geo, 'query': 'donuts'})
-        assert 'keywords' in response
         assert 'groups' in response
 
     def test_explore_limit(self):
         response = self.api.venues.explore({'ll': self.default_geo, 'limit': 10})
-        assert 'keywords' in response
         assert 'groups' in response
 
     def test_explore_intent(self):
         response = self.api.venues.explore({'ll': self.default_geo, 'intent': 'specials'})
-        assert 'keywords' in response
         assert 'groups' in response
 
 
@@ -182,32 +176,26 @@ class VenuesUserlessEndpointTestCase(BaseUserlessEndpointTestCase):
 
     def test_explore(self):
         response = self.api.venues.explore({'ll': self.default_geo})
-        assert 'keywords' in response
         assert 'groups' in response
 
     def test_explore_radius(self):
         response = self.api.venues.explore({'ll': self.default_geo, 'radius': 30})
-        assert 'keywords' in response
         assert 'groups' in response
 
     def test_explore_section(self):
         response = self.api.venues.explore({'ll': self.default_geo, 'section': 'coffee'})
-        assert 'keywords' in response
         assert 'groups' in response
 
     def test_explore_query(self):
         response = self.api.venues.explore({'ll': self.default_geo, 'query': 'donuts'})
-        assert 'keywords' in response
         assert 'groups' in response
 
     def test_explore_limit(self):
         response = self.api.venues.explore({'ll': self.default_geo, 'limit': 10})
-        assert 'keywords' in response
         assert 'groups' in response
 
     def test_explore_intent(self):
         response = self.api.venues.explore({'ll': self.default_geo, 'intent': 'specials'})
-        assert 'keywords' in response
         assert 'groups' in response
 
 
