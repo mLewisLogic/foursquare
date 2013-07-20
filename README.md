@@ -194,6 +194,14 @@ Note: endpoint methods map one-to-one with foursquare's endpoints
 
     multi()
 
+
+### Testing
+In order to run the tests:
+* Copy foursquare/tests/_creds.example.py to foursquare/tests/_creds.py
+* Fill in your personal credentials to run the tests (_creds.py is in .gitignore)
+* Run `nosetests`
+
+
 ## Improvements
 What else would you like this library to do? Let me know. Feel free to send pull requests for any improvements you make.
 
