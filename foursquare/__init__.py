@@ -26,10 +26,13 @@ except ImportError:
 
 
 # Default API version. Move this forward as the library is maintained and kept current
-API_VERSION = '20130712'
+API_VERSION_YEAR  = '2013'
+API_VERSION_MONTH = '07'
+API_VERSION_DAY   = '30'
+API_VERSION = '{year}{month}{day}'.format(year=API_VERSION_YEAR, month=API_VERSION_MONTH, day=API_VERSION_DAY)
 
 # Library versioning matches supported foursquare API version
-__version__ = API_VERSION
+__version__ = '{year}.{month}.{day}'.format(year=API_VERSION_YEAR, month=API_VERSION_MONTH, day=API_VERSION_DAY)
 __author__ = u'Mike Lewis'
 
 AUTH_ENDPOINT = 'https://foursquare.com/oauth2/authenticate'
