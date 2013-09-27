@@ -7,7 +7,10 @@ log = logging.getLogger(__name__)
 try:
     import ujson as json
 except ImportError:
-    import json
+    try:
+        import simplejson as json
+    except ImportError:
+        import json
 
 import cStringIO as StringIO
 import inspect
