@@ -164,7 +164,7 @@ class Foursquare(object):
             url = '{API_ENDPOINT}{path}?{params}'.format(
                 API_ENDPOINT=API_ENDPOINT,
                 path=path,
-                params=urllib.urlencode(params)
+                params=self._urlencode(params)
             )
             return self._request(url)
 
@@ -204,6 +204,65 @@ class Foursquare(object):
             if self.lang:
                 headers['Accept-Language'] = self.lang
             return _request_with_retry(url, headers, data)['response']
+
+        def _urlencode(self, query, doseq=0, safe_chars="&/"):
+            # Original doc: http://docs.python.org/2/library/urllib.html#urllib.urlencode
+            # Works the same way as urllib.urlencode except two differences -
+            # 1. it uses `quote()` instead of `quote_plus()`
+            # 2. it takes an extra parameter called `safe_chars` which is a string
+            #    having the characters which should not be encoded.
+
+            if hasattr(query,"items"):
+                # mapping objects
+                query = query.items()
+            else:
+                # it's a bother at times that strings and string-like objects are
+                # sequences...
+                try:
+                    # non-sequence items should not work with len()
+                    # non-empty strings will fail this
+                    if len(query) and not isinstance(query[0], tuple):
+                        raise TypeError
+                    # zero-length sequences of all types will get here and succeed,
+                    # but that's a minor nit - since the original implementation
+                    # allowed empty dicts that type of behavior probably should be
+                    # preserved for consistency
+                except TypeError:
+                    ty,va,tb = sys.exc_info()
+                    raise TypeError, "not a valid non-string sequence or mapping object", tb
+
+            l = []
+            if not doseq:
+                # preserve old behavior
+                for k, v in query:
+                    k = urllib.quote(str(k), safe=safe_chars)
+                    v = urllib.quote(str(v), safe=safe_chars)
+                    l.append(k + '=' + v)
+            else:
+                for k, v in query:
+                    k = urllib.quote(str(k), safe=safe_chars)
+                    if isinstance(v, str):
+                        v = urllib.quote(v, safe=safe_chars)
+                        l.append(k + '=' + v)
+                    elif _is_unicode(v):
+                        # is there a reasonable way to convert to ASCII?
+                        # encode generates a string, but "replace" or "ignore"
+                        # lose information and "strict" can raise UnicodeError
+                        v = urllib.quote(v.encode("ASCII","replace"), safe=safe_chars)
+                        l.append(k + '=' + v)
+                    else:
+                        try:
+                            # is this a sufficient test for sequence-ness?
+                            len(v)
+                        except TypeError:
+                            # not a sequence
+                            v = urllib.quote(str(v), safe=safe_chars)
+                            l.append(k + '=' + v)
+                        else:
+                            # loop over the sequence
+                            for elt in v:
+                                l.append(k + '=' + urllib.quote(str(elt)))
+            return '&'.join(l)
 
 
     class _Endpoint(object):
