@@ -13,6 +13,7 @@ import inspect
 import math
 import time
 import urllib
+import sys
 
 # 3rd party libraries that might not be present during initial install
 #  but we need to import for the version #
@@ -244,7 +245,7 @@ class Foursquare(object):
                     if isinstance(v, str):
                         v = urllib.quote(v, safe=safe_chars)
                         l.append(k + '=' + v)
-                    elif _is_unicode(v):
+                    elif urllib._is_unicode(v):
                         # is there a reasonable way to convert to ASCII?
                         # encode generates a string, but "replace" or "ignore"
                         # lose information and "strict" can raise UnicodeError
