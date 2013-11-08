@@ -5,7 +5,7 @@ python:
 
 install:
 - pip install . --use-mirrors
-script: nosetests
+script: nosetests --with-coverage --cover-package=foursquare
 
 env:
   global:
