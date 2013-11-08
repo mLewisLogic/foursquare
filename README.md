@@ -19,8 +19,7 @@ Features:
 
 Dependencies:
 
-* httplib2
-* simplejson (optional)
+* requests
 
 ## Installation
 
@@ -90,8 +89,8 @@ or
     client.venues('40a55d80f964a52020f31ee3')
 ##### [Search for a coffee place](https://developer.foursquare.com/docs/venues/search)
     client.venues.search(params={'query': 'coffee'})
-##### [Mark a venue to-do](https://developer.foursquare.com/docs/venues/marktodo)
-    client.venues.marktodo('40a55d80f964a52020f31ee3')
+##### [Edit venue details](https://developer.foursquare.com/docs/venues/edit)
+    client.venues.edit('40a55d80f964a52020f31ee3', params={'description': 'Best restaurant on the city'})
 
 #### Checkins
 ##### [Get recent checkins for yourself](https://developer.foursquare.com/docs/checkins/recent)
@@ -141,8 +140,9 @@ Note: endpoint methods map one-to-one with foursquare's endpoints
     venues.photos()
     venues.similar()
     venues.tips()
+    venues.edit()
     venues.flag()
-    venues.marktodo()
+    venues.edit()
     venues.proposeedit()
 
     checkins()
@@ -186,6 +186,7 @@ Note: endpoint methods map one-to-one with foursquare's endpoints
 
     specials()
     specials.search()
+    specials.add()
     specials.flag()
 
     events()

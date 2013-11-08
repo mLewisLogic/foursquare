@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 # (c) 2013 Mike Lewis
-import logging
-log = logging.getLogger(__name__)
+import logging; log = logging.getLogger(__name__)
 
+# Try to load JSON libraries in this order:
+# ujson -> simplejson -> json
 try:
     import ujson as json
 except ImportError:
@@ -19,25 +20,23 @@ import time
 import urllib
 
 # 3rd party libraries that might not be present during initial install
-# but we need to import for the version #
+#  but we need to import for the version #
 try:
-    import httplib2
-    import poster
+    import requests
 except ImportError:
     pass
 
 
-# Default API version. Move this forward as the library is maintained and
-# kept current
-API_VERSION_YEAR = '2013'
-API_VERSION_MONTH = '07'
-API_VERSION_DAY = '30'
-API_VERSION = '{year}{month}{day}'.format(
-    year=API_VERSION_YEAR, month=API_VERSION_MONTH, day=API_VERSION_DAY)
+
+
+# Default API version. Move this forward as the library is maintained and kept current
+API_VERSION_YEAR  = '2013'
+API_VERSION_MONTH = '11'
+API_VERSION_DAY   = '11'
+API_VERSION = '{year}{month}{day}'.format(year=API_VERSION_YEAR, month=API_VERSION_MONTH, day=API_VERSION_DAY)
 
 # Library versioning matches supported foursquare API version
-__version__ = '{year}.{month}.{day}'.format(
-    year=API_VERSION_YEAR, month=API_VERSION_MONTH, day=API_VERSION_DAY)
+__version__ = '{year}.{month}.{day}'.format(year=API_VERSION_YEAR, month=API_VERSION_MONTH, day=API_VERSION_DAY)
 __author__ = u'Mike Lewis'
 
 AUTH_ENDPOINT = 'https://foursquare.com/oauth2/authenticate'
@@ -50,50 +49,20 @@ NUM_REQUEST_RETRIES = 3
 # Max number of sub-requests per multi request
 MAX_MULTI_REQUESTS = 5
 
-# Keyworded Arguments passed to the httplib2.Http() request
-HTTP_KWARGS = {}
 
 
 # Generic foursquare exception
-class FoursquareException(Exception):
-    pass
+class FoursquareException(Exception): pass
 # Specific exceptions
-
-
-class InvalidAuth(FoursquareException):
-    pass
-
-
-class ParamError(FoursquareException):
-    pass
-
-
-class EndpointError(FoursquareException):
-    pass
-
-
-class NotAuthorized(FoursquareException):
-    pass
-
-
-class RateLimitExceeded(FoursquareException):
-    pass
-
-
-class Deprecated(FoursquareException):
-    pass
-
-
-class ServerError(FoursquareException):
-    pass
-
-
-class FailedGeocode(FoursquareException):
-    pass
-
-
-class Other(FoursquareException):
-    pass
+class InvalidAuth(FoursquareException): pass
+class ParamError(FoursquareException): pass
+class EndpointError(FoursquareException): pass
+class NotAuthorized(FoursquareException): pass
+class RateLimitExceeded(FoursquareException): pass
+class Deprecated(FoursquareException): pass
+class ServerError(FoursquareException): pass
+class FailedGeocode(FoursquareException): pass
+class Other(FoursquareException): pass
 
 error_types = {
     'invalid_auth': InvalidAuth,
@@ -108,8 +77,8 @@ error_types = {
 }
 
 
-class Foursquare(object):
 
+class Foursquare(object):
     """foursquare V2 API wrapper"""
 
     def __init__(self, client_id=None, client_secret=None, access_token=None, redirect_uri=None, version=None, lang=None):
@@ -117,8 +86,7 @@ class Foursquare(object):
         # Set up OAuth
         self.oauth = self.OAuth(client_id, client_secret, redirect_uri)
         # Set up endpoints
-        self.base_requester = self.Requester(
-            client_id, client_secret, access_token, version, lang)
+        self.base_requester = self.Requester(client_id, client_secret, access_token, version, lang)
         # Dynamically enable endpoints
         self._attach_endpoints()
 
@@ -134,9 +102,7 @@ class Foursquare(object):
         self.base_requester.set_token(access_token)
 
     class OAuth(object):
-
         """Handles OAuth authentication procedures and helps retrieve tokens"""
-
         def __init__(self, client_id, client_secret, redirect_uri):
             self.client_id = client_id
             self.client_secret = client_secret
@@ -165,18 +131,12 @@ class Foursquare(object):
                 'redirect_uri': self.redirect_uri,
                 'code': unicode(code),
             }
-            # Build the token uri to request
-            url = u'{TOKEN_ENDPOINT}?{params}'.format(
-                TOKEN_ENDPOINT=TOKEN_ENDPOINT,
-                params=urllib.urlencode(data))
             # Get the response from the token uri and attempt to parse
-            response = _request_with_retry(url)
-            return response.get('access_token')
+            _get(TOKEN_ENDPOINT, data=data)['access_token']
+
 
     class Requester(object):
-
         """Api requesting object"""
-
         def __init__(self, client_id=None, client_secret=None, access_token=None, version=None, lang=None):
             """Sets up the api object"""
             self.client_id = client_id
@@ -189,40 +149,45 @@ class Foursquare(object):
         def set_token(self, access_token):
             """Set the OAuth token for this requester"""
             self.oauth_token = access_token
-            # Userless if no access_token
-            self.userless = not bool(access_token)
+            self.userless = not bool(access_token) # Userless if no access_token
 
         def GET(self, path, params={}, **kwargs):
             """GET request that returns processed data"""
+            params = params.copy()
             # Short-circuit multi requests
             if kwargs.get('multi') is True:
                 return self.add_multi_request(path, params)
             # Continue processing normal requests
+            headers = self._get_headers()
             params = self._enrich_params(params)
-            url = '{API_ENDPOINT}{path}?{params}'.format(
-                API_ENDPOINT=API_ENDPOINT,
-                path=path,
-                params=urllib.urlencode(params)
-            )
-            return self._request(url)
-
-        def add_multi_request(self, path, params={}):
-            """Add multi request to list and return the number of requests added"""
-            url = '{path}?{params}'.format(
-                path=path,
-                params=urllib.urlencode(params)
-            )
-            self.multi_requests.append(url)
-            return len(self.multi_requests)
-
-        def POST(self, path, params={}):
-            """POST request that returns processed data"""
-            params = self._enrich_params(params)
+            params = self._urlencode_params(params)
             url = '{API_ENDPOINT}{path}'.format(
                 API_ENDPOINT=API_ENDPOINT,
                 path=path
             )
-            return self._request(url, params)
+            return _get(url, headers=headers, params=params)['response']
+
+        def add_multi_request(self, path, params={}):
+            """Add multi request to list and return the number of requests added"""
+            url = path
+            if params:
+                url += '?{0}'.format(urllib.urlencode(params))
+            self.multi_requests.append(url)
+            return len(self.multi_requests)
+
+        def POST(self, path, data={}, files=None):
+            """POST request that returns processed data"""
+            if data is not None:
+                data = data.copy()
+            if files is not None:
+                files = files.copy()
+            headers = self._get_headers()
+            data = self._enrich_params(data)
+            url = '{API_ENDPOINT}{path}'.format(
+                API_ENDPOINT=API_ENDPOINT,
+                path=path
+            )
+            return _post(url, headers=headers, data=data, files=files)['response']
 
         def _enrich_params(self, params):
             """Enrich the params dict"""
@@ -235,6 +200,24 @@ class Foursquare(object):
                 params['oauth_token'] = self.oauth_token
             return params
 
+        def _urlencode_params(self, params):
+            """Urlencode string value params without quote_plus"""
+            # We need to do this because Foursquare does not properly handle quote_plus'd strings for queries.
+            for k, v in params.iteritems():
+                if isinstance(v, basestring):
+                    # We need to exclude commas because Foursquare, once again, can handle those
+                    #  being urlencoded for lat,longs.
+                    params[k] = urllib.quote(v, ',')
+            return params
+
+        def _get_headers(self):
+            """Get the headers we need"""
+            headers = {}
+            # If we specified a specific language, use that
+            if self.lang:
+                headers['Accept-Language'] = self.lang
+            return headers
+
         def _request(self, url, data=None):
             """Performs the passed request and returns meaningful data"""
             headers = {}
@@ -243,10 +226,9 @@ class Foursquare(object):
                 headers['Accept-Language'] = self.lang
             return _request_with_retry(url, headers, data)['response']
 
+
     class _Endpoint(object):
-
         """Generic endpoint class"""
-
         def __init__(self, requester):
             """Stores the request function for retrieving data"""
             self.requester = requester
@@ -265,8 +247,9 @@ class Foursquare(object):
             """Use the requester to post the data"""
             return self.requester.POST(self._expanded_path(path), *args, **kwargs)
 
-    class Users(_Endpoint):
 
+
+    class Users(_Endpoint):
         """User specific endpoint"""
         endpoint = 'users'
 
@@ -277,7 +260,6 @@ class Foursquare(object):
         """
         General
         """
-
         def leaderboard(self, params={}, multi=False):
             """https://developer.foursquare.com/docs/users/leaderboard"""
             return self.GET('leaderboard', params, multi=multi)
@@ -293,7 +275,6 @@ class Foursquare(object):
         """
         Aspects
         """
-
         def badges(self, USER_ID=u'self', multi=False):
             """https://developer.foursquare.com/docs/users/badges"""
             return self.GET('{USER_ID}/badges'.format(USER_ID=USER_ID), multi=multi)
@@ -306,8 +287,7 @@ class Foursquare(object):
             """Utility function: Get every checkin this user has ever made"""
             offset = 0
             while(True):
-                checkins = self.checkins(
-                    USER_ID=USER_ID, params={'limit': 250, 'offset': offset})
+                checkins = self.checkins(USER_ID=USER_ID, params={'limit': 250, 'offset': offset})
                 # Yield out each checkin
                 for checkin in checkins['checkins']['items']:
                     yield checkin
@@ -340,7 +320,6 @@ class Foursquare(object):
         """
         Actions
         """
-
         def approve(self, USER_ID):
             """https://developer.foursquare.com/docs/users/approve"""
             return self.POST('{USER_ID}/approve'.format(USER_ID=USER_ID))
@@ -361,19 +340,24 @@ class Foursquare(object):
             """https://developer.foursquare.com/docs/users/unfriend"""
             return self.POST('{USER_ID}/unfriend'.format(USER_ID=USER_ID))
 
-        def update(self, params):
+        def update(self, params={}, photo_data=None):
             """https://developer.foursquare.com/docs/users/update"""
-            return self.POST('self/update', params)
+            if photo_data:
+                files = { 'photo': ('photo', photo_data) }
+            else:
+                files = None
+            return self.POST('self/update', data=params, files=files)
+
+
+
 
     class Venues(_Endpoint):
-
         """Venue specific endpoint"""
         endpoint = 'venues'
 
         """
         General
         """
-
         def __call__(self, VENUE_ID, multi=False):
             """https://developer.foursquare.com/docs/venues/venues"""
             return self.GET('{VENUE_ID}'.format(VENUE_ID=VENUE_ID), multi=multi)
@@ -395,7 +379,6 @@ class Foursquare(object):
             return self.GET('managed', multi=multi)
 
         MAX_SEARCH_LIMIT = 50
-
         def search(self, params, multi=False):
             """https://developer.foursquare.com/docs/venues/search"""
             return self.GET('search', params, multi=multi)
@@ -411,7 +394,6 @@ class Foursquare(object):
         """
         Aspects
         """
-
         def events(self, VENUE_ID, multi=False):
             """https://developer.foursquare.com/docs/venues/events"""
             return self.GET('{VENUE_ID}/events'.format(VENUE_ID=VENUE_ID), multi=multi)
@@ -451,21 +433,24 @@ class Foursquare(object):
         """
         Actions
         """
+        def edit(self, VENUE_ID, params={}):
+            """https://developer.foursquare.com/docs/venues/edit"""
+            return self.POST('{VENUE_ID}/edit'.format(VENUE_ID=VENUE_ID), params)
 
         def flag(self, VENUE_ID, params):
             """https://developer.foursquare.com/docs/venues/flag"""
             return self.POST('{VENUE_ID}/flag'.format(VENUE_ID=VENUE_ID), params)
 
         def marktodo(self, VENUE_ID, params={}):
-            """https://developer.foursquare.com/docs/venues/edit"""
-            return self.POST('{VENUE_ID}/edit'.format(VENUE_ID=VENUE_ID), params)
+            """https://developer.foursquare.com/docs/venues/marktodo"""
+            return self.POST('{VENUE_ID}/marktodo'.format(VENUE_ID=VENUE_ID), params)
 
         def proposeedit(self, VENUE_ID, params):
             """https://developer.foursquare.com/docs/venues/proposeedit"""
             return self.POST('{VENUE_ID}/proposeedit'.format(VENUE_ID=VENUE_ID), params)
 
-    class Checkins(_Endpoint):
 
+    class Checkins(_Endpoint):
         """Checkin specific endpoint"""
         endpoint = 'checkins'
 
@@ -484,7 +469,6 @@ class Foursquare(object):
         """
         Actions
         """
-
         def addcomment(self, CHECKIN_ID, params):
             """https://developer.foursquare.com/docs/checkins/addcomment"""
             return self.POST('{CHECKIN_ID}/addcomment'.format(CHECKIN_ID=CHECKIN_ID), params)
@@ -501,8 +485,8 @@ class Foursquare(object):
             """https://developer.foursquare.com/docs/checkins/reply"""
             return self.POST('{CHECKIN_ID}/reply'.format(CHECKIN_ID=CHECKIN_ID), params)
 
-    class Tips(_Endpoint):
 
+    class Tips(_Endpoint):
         """Tips specific endpoint"""
         endpoint = 'tips'
 
@@ -521,7 +505,6 @@ class Foursquare(object):
         """
         Aspects
         """
-
         def done(self, TIP_ID, params={}, multi=False):
             """https://developer.foursquare.com/docs/tips/done"""
             return self.GET('{TIP_ID}/done'.format(TIP_ID=TIP_ID), params, multi=multi)
@@ -533,7 +516,6 @@ class Foursquare(object):
         """
         Actions
         """
-
         def markdone(self, TIP_ID):
             """https://developer.foursquare.com/docs/tips/markdone"""
             return self.POST('{TIP_ID}/markdone'.format(TIP_ID=TIP_ID))
@@ -546,8 +528,8 @@ class Foursquare(object):
             """https://developer.foursquare.com/docs/tips/unmark"""
             return self.POST('{TIP_ID}/unmark'.format(TIP_ID=TIP_ID))
 
-    class Lists(_Endpoint):
 
+    class Lists(_Endpoint):
         """Lists specific endpoint"""
         endpoint = 'lists'
 
@@ -562,7 +544,6 @@ class Foursquare(object):
         """
         Aspects
         """
-
         def followers(self, LIST_ID, multi=False):
             """https://developer.foursquare.com/docs/lists/followers"""
             return self.GET('{LIST_ID}/followers'.format(LIST_ID=LIST_ID), multi=multi)
@@ -582,7 +563,6 @@ class Foursquare(object):
         """
         Actions
         """
-
         def additem(self, LIST_ID, params):
             """https://developer.foursquare.com/docs/lists/additem"""
             return self.POST('{LIST_ID}/additem'.format(LIST_ID=LIST_ID), params)
@@ -615,8 +595,8 @@ class Foursquare(object):
             """https://developer.foursquare.com/docs/tips/updateitem"""
             return self.POST('{LIST_ID}/updateitem'.format(LIST_ID=LIST_ID), params)
 
-    class Photos(_Endpoint):
 
+    class Photos(_Endpoint):
         """Photo specific endpoint"""
         endpoint = 'photos'
 
@@ -626,16 +606,11 @@ class Foursquare(object):
 
         def add(self, photo_data, params):
             """https://developer.foursquare.com/docs/photos/add"""
-            params['photo'] = poster.encode.MultipartParam(
-                name='photo',
-                filename='photo',
-                filetype='image/jpeg',
-                fileobj=StringIO.StringIO(photo_data)
-            )
-            return self.POST('add', params)
+            files = { 'photo': ('photo', photo_data) }
+            return self.POST('add', data=params, files=files)
+
 
     class Settings(_Endpoint):
-
         """Setting specific endpoint"""
         endpoint = 'settings'
 
@@ -650,13 +625,12 @@ class Foursquare(object):
         """
         Actions
         """
-
         def set(self, SETTING_ID, params):
             """https://developer.foursquare.com/docs/settings/set"""
             return self.POST('{SETTING_ID}/set'.format(SETTING_ID=SETTING_ID), params)
 
-    class Specials(_Endpoint):
 
+    class Specials(_Endpoint):
         """Specials specific endpoint"""
         endpoint = 'specials'
 
@@ -671,13 +645,16 @@ class Foursquare(object):
         """
         Actions
         """
+        def add(self, SPECIAL_ID, params):
+            """https://developer.foursquare.com/docs/specials/add"""
+            return self.POST('add', params)
 
         def flag(self, SPECIAL_ID, params):
             """https://developer.foursquare.com/docs/specials/flag"""
             return self.POST('{SPECIAL_ID}/flag'.format(SPECIAL_ID=SPECIAL_ID), params)
 
-    class Events(_Endpoint):
 
+    class Events(_Endpoint):
         """Events specific endpoint"""
         endpoint = 'events'
 
@@ -693,8 +670,8 @@ class Foursquare(object):
             """https://developer.foursquare.com/docs/events/search"""
             return self.GET('search', params, multi=multi)
 
-    class Pages(_Endpoint):
 
+    class Pages(_Endpoint):
         """Pages specific endpoint"""
         endpoint = 'pages'
 
@@ -710,13 +687,13 @@ class Foursquare(object):
             """https://developer.foursquare.com/docs/pages/venues"""
             return self.GET('{PAGE_ID}/venues'.format(PAGE_ID=PAGE_ID), params, multi=multi)
 
-    class Multi(_Endpoint):
 
+    class Multi(_Endpoint):
         """Multi request endpoint handler"""
         endpoint = 'multi'
 
         def __len__(self):
-            return len(self.requester.multi_requests)
+          return len(self.requester.multi_requests)
 
         def __call__(self):
             """
@@ -750,57 +727,53 @@ class Foursquare(object):
             return int(math.ceil(len(self.requester.multi_requests) / float(MAX_MULTI_REQUESTS)))
 
 
+
 """
 Network helper functions
 """
-
-
-def _request_with_retry(url, headers={}, data=None):
-    """Tries to load data from an endpoint using retries"""
+#def _request_with_retry(url, headers={}, data=None):
+def _get(url, headers={}, params=None):
+    """Tries to GET data from an endpoint using retries"""
     for i in xrange(NUM_REQUEST_RETRIES):
         try:
-            return _process_request_with_httplib2(url, headers, data)
+            try:
+                response = requests.get(url, headers=headers, params=params)
+                return _process_response(response)
+            except requests.exceptions.RequestException, e:
+                errmsg = u'Error connecting with foursquare API: {0}'.format(e)
+                log.error(errmsg)
+                raise FoursquareException(errmsg)
         except FoursquareException, e:
             # Some errors don't bear repeating
-            if e.__class__ in [InvalidAuth, ParamError, EndpointError, NotAuthorized, Deprecated]:
-                raise
-            if ((i + 1) == NUM_REQUEST_RETRIES):
-                raise
+            if e.__class__ in [InvalidAuth, ParamError, EndpointError, NotAuthorized, Deprecated]: raise
+            # If we've reached our last try, re-raise
+            if ((i + 1) == NUM_REQUEST_RETRIES): raise
         time.sleep(1)
 
-
-def _process_request_with_httplib2(url, headers={}, data=None):
-    """Make the request and handle exception processing"""
-    h = httplib2.Http(**HTTP_KWARGS)
+def _post(url, headers={}, data=None, files=None):
+    """Tries to POST data to an endpoint"""
     try:
-        if data:
-            datagen, multipart_headers = poster.encode.multipart_encode(data)
-            data = ''.join(datagen)
-            headers.update(multipart_headers)
-            method = 'POST'
-        else:
-            method = 'GET'
-        response, body = h.request(url, method, headers=headers, body=data)
-        data = _json_to_data(body)
-        # Default case, Got proper response
-        if response.status == 200:
-            return data
-        return _check_response(data)
-    except httplib2.HttpLib2Error, e:
+        response = requests.post(url, headers=headers, data=data, files=files)
+        return _process_response(response)
+    except requests.exceptions.RequestException, e:
         errmsg = u'Error connecting with foursquare API: {0}'.format(e)
         log.error(errmsg)
         raise FoursquareException(errmsg)
 
-
-def _json_to_data(s):
-    """Convert a response string to data"""
+def _process_response(response):
+    """Make the request and handle exception processing"""
+    # Read the response as JSON
     try:
-        return json.loads(s)
-    except ValueError, e:
-        errmsg = u'Invalid response: {0}'.format(e)
+        data = response.json()
+    except ValueError:
+        errmsg = u'Invalid response: {0}'.format(response.text())
         log.error(errmsg)
         raise FoursquareException(errmsg)
-
+    
+    # Default case, Got proper response
+    if response.status_code == 200:
+        return data
+    return _check_response(data)
 
 def _check_response(data):
     """Processes the response data"""
@@ -809,8 +782,7 @@ def _check_response(data):
     if meta:
         # Account for foursquare conflicts
         # see: https://developer.foursquare.com/overview/responses
-        if meta.get('code') in (200, 409):
-            return data
+        if meta.get('code') in (200, 409): return data
         exc = error_types.get(meta.get('errorType'))
         if exc:
             raise exc(meta.get('errorDetail'))
@@ -819,7 +791,6 @@ def _check_response(data):
             log.error(errmsg)
             raise FoursquareException(errmsg)
     else:
-        errmsg = u'Response format invalid, missing meta property. data: {0}'.format(
-            data)
+        errmsg = u'Response format invalid, missing meta property. data: {0}'.format(data)
         log.error(errmsg)
         raise FoursquareException(errmsg)

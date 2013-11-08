@@ -3,6 +3,8 @@
 # (c) 2013 Mike Lewis
 import logging; log = logging.getLogger(__name__)
 
+import os
+
 from . import BaseAuthenticatedEndpointTestCase
 
 
@@ -102,3 +104,22 @@ class UsersEndpointTestCase(BaseAuthenticatedEndpointTestCase):
     def test_venuehistory(self):
         response = self.api.users.venuehistory()
         assert 'venues' in response
+
+    """
+    Actions
+    """
+    def test_update_name(self):
+        # Change my name to Miguel
+        response = self.api.users.update(params={'firstName': 'Miguel'})
+        assert 'user' in response
+        assert response['user']['firstName'] == 'Miguel'
+        # Change it back
+        response = self.api.users.update(params={'firstName': 'Mike'})
+        assert 'user' in response
+        assert response['user']['firstName'] == 'Mike'
+
+    def test_update_photo(self):
+        curr_dir = os.path.dirname(os.path.realpath(__file__))
+        profile_photo = os.path.join(curr_dir, 'profile_photo.jpg')
+        response = self.api.users.update(photo_data=open(profile_photo, 'r'))
+        assert 'user' in response
