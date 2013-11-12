@@ -3,10 +3,15 @@
 # (c) 2013 Mike Lewis
 import logging; log = logging.getLogger(__name__)
 
+# Try to load JSON libraries in this order:
+# ujson -> simplejson -> json
 try:
-    import simplejson as json
+    import ujson as json
 except ImportError:
-    import json
+    try:
+        import simplejson as json
+    except ImportError:
+        import json
 
 import cStringIO as StringIO
 import inspect
