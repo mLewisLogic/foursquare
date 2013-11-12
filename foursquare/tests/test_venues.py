@@ -215,6 +215,11 @@ class VenuesUserlessEndpointTestCase(BaseUserlessEndpointTestCase):
         response = self.api.venues.search({'ll': self.default_geo, 'radius': self.default_geo_radius, 'intent': 'browse'})
         assert 'venues' in response
 
+    def test_search_ampersand(self):
+        response = self.api.venues.search({'query': u'Mirch Masala Restaurant & Bar', 'll': u'22.52,88.36'})
+        assert 'venues' in response
+        assert len(response['venues']) # Make sure there's at least one result
+
 
     def test_trending(self):
         response = self.api.venues.trending({'ll': self.default_geo})

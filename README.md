@@ -19,8 +19,7 @@ Features:
 
 Dependencies:
 
-* httplib2
-* simplejson (optional)
+* requests
 
 ## Installation
 
