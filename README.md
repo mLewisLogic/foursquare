@@ -143,7 +143,7 @@ Note: endpoint methods map one-to-one with foursquare's endpoints
     venues.tips()
     venues.edit()
     venues.flag()
-    venues.marktodo()
+    venues.edit()
     venues.proposeedit()
 
     checkins()
