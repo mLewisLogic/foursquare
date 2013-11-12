@@ -114,21 +114,21 @@ class Foursquare(object):
 
         def auth_url(self):
             """Gets the url a user needs to access to give up a user token"""
-            data = {
+            params = {
                 'client_id': self.client_id,
                 'response_type': u'code',
                 'redirect_uri': self.redirect_uri,
             }
             return '{AUTH_ENDPOINT}?{params}'.format(
                 AUTH_ENDPOINT=AUTH_ENDPOINT,
-                params=urllib.urlencode(data))
+                params=urllib.urlencode(params))
 
         def get_token(self, code):
             """Gets the auth token from a user's response"""
             if not code:
                 log.error(u'Code not provided')
                 return None
-            data = {
+            params = {
                 'client_id': self.client_id,
                 'client_secret': self.client_secret,
                 'grant_type': u'authorization_code',
@@ -136,7 +136,7 @@ class Foursquare(object):
                 'code': unicode(code),
             }
             # Get the response from the token uri and attempt to parse
-            _get(TOKEN_ENDPOINT, data=data)['access_token']
+            _get(TOKEN_ENDPOINT, params=params)['access_token']
 
 
     class Requester(object):
