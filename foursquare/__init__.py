@@ -23,6 +23,10 @@ import urllib
 #  but we need to import for the version #
 try:
     import requests
+
+    # Monkey patch to requests' json using ujson when available;
+    # Otherwise it wouldn't affect anything
+    requests.models.json = json
 except ImportError:
     pass
 
@@ -769,7 +773,7 @@ def _process_response(response):
         errmsg = u'Invalid response: {0}'.format(response.text())
         log.error(errmsg)
         raise FoursquareException(errmsg)
-    
+
     # Default case, Got proper response
     if response.status_code == 200:
         return data
