@@ -408,13 +408,17 @@ class Foursquare(object):
         """
         Actions
         """
+        def edit(self, VENUE_ID, params={}):
+            """https://developer.foursquare.com/docs/venues/edit"""
+            return self.POST('{VENUE_ID}/edit'.format(VENUE_ID=VENUE_ID), params)
+
         def flag(self, VENUE_ID, params):
             """https://developer.foursquare.com/docs/venues/flag"""
             return self.POST('{VENUE_ID}/flag'.format(VENUE_ID=VENUE_ID), params)
 
         def marktodo(self, VENUE_ID, params={}):
-            """https://developer.foursquare.com/docs/venues/edit"""
-            return self.POST('{VENUE_ID}/edit'.format(VENUE_ID=VENUE_ID), params)
+            """https://developer.foursquare.com/docs/venues/marktodo"""
+            return self.POST('{VENUE_ID}/marktodo'.format(VENUE_ID=VENUE_ID), params)
 
         def proposeedit(self, VENUE_ID, params):
             """https://developer.foursquare.com/docs/venues/proposeedit"""
