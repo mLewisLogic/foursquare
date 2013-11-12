@@ -16,7 +16,6 @@ except ImportError:
 import cStringIO as StringIO
 import inspect
 import math
-import requests
 import time
 import urllib
 
