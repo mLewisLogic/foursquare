@@ -1,15 +1,16 @@
 language: python
 python:
-- '2.6'
-- '2.7'
+  - '2.6'
+  - '2.7'
 
 install:
-- pip install coverage --use-mirrors
-- pip install . --use-mirrors
-script: nosetests --with-coverage --cover-package=foursquare
+  - pip install coverage --use-mirrors
+  - pip install . --use-mirrors
+
+script:
+  - nosetests --with-coverage --cover-package=foursquare
 
 env:
-  global:
   - secure: xkX+X1HcB2P0lbVYXT81NQBtuc/pyxBpMIqsZg+2KZM3GJBlX2/UJ5EXBWMS4WUdH63no1CQ7+MtSxELT+xsEMEUsR2+jjuW8qWAhd6dWCd5tmuw3nf4f1sALWtg7k4UVLu4jvpKgSM6eAoSp5P6J4pDtAlO64vBymyPjRTnQwQ=
   - secure: cXsyf6Hd65bZaB2mszO2s30FtX/C7QB36rau79Znuwcbjcb0ED18qH/s5pqIsCvOkGO+3MQPILVPkAtWO7fExtWVxhxoTvftevdE6Bbt+Hc3GFgYBoPAuEE2nKlnsVeZgBFYK5/ilsLKlI8k0uTjguWhSfRasO62hJcWTvyRhCQ=
-  - secure: wSDqbCUqxXL09SdSQTaGGxowyU05NGlk37qhvoSScizQfSBfuDDYcKG3FHWPE3UiOFUAdOBnXcy5tiUxpWhp4tmRinRTOmeV68yDMDBLkeD/TWPgP9tD4RMH7/Hs14MwUaga+e7ItLSaL5+TQVwUeuWdZNcZkSyuBm0EbgZ/ef4='
+  - secure: wSDqbCUqxXL09SdSQTaGGxowyU05NGlk37qhvoSScizQfSBfuDDYcKG3FHWPE3UiOFUAdOBnXcy5tiUxpWhp4tmRinRTOmeV68yDMDBLkeD/TWPgP9tD4RMH7/Hs14MwUaga+e7ItLSaL5+TQVwUeuWdZNcZkSyuBm0EbgZ/ef4=
