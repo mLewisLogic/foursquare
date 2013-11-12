@@ -187,6 +187,7 @@ Note: endpoint methods map one-to-one with foursquare's endpoints
 
     specials()
     specials.search()
+    specials.add()
     specials.flag()
 
     events()
