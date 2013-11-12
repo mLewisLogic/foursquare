@@ -630,6 +630,10 @@ class Foursquare(object):
         """
         Actions
         """
+        def add(self, SPECIAL_ID, params):
+            """https://developer.foursquare.com/docs/specials/add"""
+            return self.POST('add', params)
+
         def flag(self, SPECIAL_ID, params):
             """https://developer.foursquare.com/docs/specials/flag"""
             return self.POST('{SPECIAL_ID}/flag'.format(SPECIAL_ID=SPECIAL_ID), params)
