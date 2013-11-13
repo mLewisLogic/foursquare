@@ -121,5 +121,9 @@ class UsersEndpointTestCase(BaseAuthenticatedEndpointTestCase):
     def test_update_photo(self):
         curr_dir = os.path.dirname(os.path.realpath(__file__))
         profile_photo = os.path.join(curr_dir, 'profile_photo.jpg')
-        response = self.api.users.update(photo_data=open(profile_photo, 'r'))
-        assert 'user' in response
+        # Fail gracefully if we don't have a profile photo on disk
+        if os.path.isfile(profile_photo):
+            response = self.api.users.update(photo_data=open(profile_photo, 'r'))
+            assert 'user' in response
+        else:
+            print u"Put a 'profile_photo.jpg' file in the tests/ directory to enable this test."
