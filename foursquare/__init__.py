@@ -136,7 +136,7 @@ class Foursquare(object):
                 'code': unicode(code),
             }
             # Get the response from the token uri and attempt to parse
-            _get(TOKEN_ENDPOINT, params=params)['access_token']
+            return _get(TOKEN_ENDPOINT, params=params)['access_token']
 
 
     class Requester(object):
