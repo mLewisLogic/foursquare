@@ -164,7 +164,6 @@ class Foursquare(object):
             # Continue processing normal requests
             headers = self._get_headers()
             params = self._enrich_params(params)
-            params = self._urlencode_params(params)
             url = '{API_ENDPOINT}{path}'.format(
                 API_ENDPOINT=API_ENDPOINT,
                 path=path
