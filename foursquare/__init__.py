@@ -3,10 +3,15 @@
 # (c) 2013 Mike Lewis
 import logging; log = logging.getLogger(__name__)
 
+# Try to load JSON libraries in this order:
+# ujson -> simplejson -> json
 try:
-    import simplejson as json
+    import ujson as json
 except ImportError:
-    import json
+    try:
+        import simplejson as json
+    except ImportError:
+        import json
 
 import cStringIO as StringIO
 import inspect
@@ -17,8 +22,11 @@ import urllib
 # 3rd party libraries that might not be present during initial install
 #  but we need to import for the version #
 try:
-    import httplib2
-    import poster
+    import requests
+
+    # Monkey patch to requests' json using ujson when available;
+    # Otherwise it wouldn't affect anything
+    requests.models.json = json
 except ImportError:
     pass
 
@@ -27,8 +35,8 @@ except ImportError:
 
 # Default API version. Move this forward as the library is maintained and kept current
 API_VERSION_YEAR  = '2013'
-API_VERSION_MONTH = '07'
-API_VERSION_DAY   = '30'
+API_VERSION_MONTH = '11'
+API_VERSION_DAY   = '13'
 API_VERSION = '{year}{month}{day}'.format(year=API_VERSION_YEAR, month=API_VERSION_MONTH, day=API_VERSION_DAY)
 
 # Library versioning matches supported foursquare API version
@@ -45,8 +53,6 @@ NUM_REQUEST_RETRIES = 3
 # Max number of sub-requests per multi request
 MAX_MULTI_REQUESTS = 5
 
-# Keyworded Arguments passed to the httplib2.Http() request
-HTTP_KWARGS = {}
 
 
 # Generic foursquare exception
@@ -108,34 +114,29 @@ class Foursquare(object):
 
         def auth_url(self):
             """Gets the url a user needs to access to give up a user token"""
-            data = {
+            params = {
                 'client_id': self.client_id,
                 'response_type': u'code',
                 'redirect_uri': self.redirect_uri,
             }
             return '{AUTH_ENDPOINT}?{params}'.format(
                 AUTH_ENDPOINT=AUTH_ENDPOINT,
-                params=urllib.urlencode(data))
+                params=urllib.urlencode(params))
 
         def get_token(self, code):
             """Gets the auth token from a user's response"""
             if not code:
                 log.error(u'Code not provided')
                 return None
-            data = {
+            params = {
                 'client_id': self.client_id,
                 'client_secret': self.client_secret,
                 'grant_type': u'authorization_code',
                 'redirect_uri': self.redirect_uri,
                 'code': unicode(code),
             }
-            # Build the token uri to request
-            url = u'{TOKEN_ENDPOINT}?{params}'.format(
-                TOKEN_ENDPOINT=TOKEN_ENDPOINT,
-                params=urllib.urlencode(data))
             # Get the response from the token uri and attempt to parse
-            response = _request_with_retry(url)
-            return response.get('access_token')
+            return _get(TOKEN_ENDPOINT, params=params)['access_token']
 
 
     class Requester(object):
@@ -156,35 +157,41 @@ class Foursquare(object):
 
         def GET(self, path, params={}, **kwargs):
             """GET request that returns processed data"""
+            params = params.copy()
             # Short-circuit multi requests
             if kwargs.get('multi') is True:
                 return self.add_multi_request(path, params)
             # Continue processing normal requests
+            headers = self._get_headers()
             params = self._enrich_params(params)
-            url = '{API_ENDPOINT}{path}?{params}'.format(
-                API_ENDPOINT=API_ENDPOINT,
-                path=path,
-                params=urllib.urlencode(params)
-            )
-            return self._request(url)
-
-        def add_multi_request(self, path, params={}):
-            """Add multi request to list and return the number of requests added"""
-            url = '{path}?{params}'.format(
-                path=path,
-                params=urllib.urlencode(params)
-            )
-            self.multi_requests.append(url)
-            return len(self.multi_requests)
-
-        def POST(self, path, params={}):
-            """POST request that returns processed data"""
-            params = self._enrich_params(params)
+            params = self._urlencode_params(params)
             url = '{API_ENDPOINT}{path}'.format(
                 API_ENDPOINT=API_ENDPOINT,
                 path=path
             )
-            return self._request(url, params)
+            return _get(url, headers=headers, params=params)['response']
+
+        def add_multi_request(self, path, params={}):
+            """Add multi request to list and return the number of requests added"""
+            url = path
+            if params:
+                url += '?{0}'.format(urllib.urlencode(params))
+            self.multi_requests.append(url)
+            return len(self.multi_requests)
+
+        def POST(self, path, data={}, files=None):
+            """POST request that returns processed data"""
+            if data is not None:
+                data = data.copy()
+            if files is not None:
+                files = files.copy()
+            headers = self._get_headers()
+            data = self._enrich_params(data)
+            url = '{API_ENDPOINT}{path}'.format(
+                API_ENDPOINT=API_ENDPOINT,
+                path=path
+            )
+            return _post(url, headers=headers, data=data, files=files)['response']
 
         def _enrich_params(self, params):
             """Enrich the params dict"""
@@ -196,6 +203,24 @@ class Foursquare(object):
             else:
                 params['oauth_token'] = self.oauth_token
             return params
+
+        def _urlencode_params(self, params):
+            """Urlencode string value params without quote_plus"""
+            # We need to do this because Foursquare does not properly handle quote_plus'd strings for queries.
+            for k, v in params.iteritems():
+                if isinstance(v, basestring):
+                    # We need to exclude commas because Foursquare, once again, can handle those
+                    #  being urlencoded for lat,longs.
+                    params[k] = urllib.quote(v, ',')
+            return params
+
+        def _get_headers(self):
+            """Get the headers we need"""
+            headers = {}
+            # If we specified a specific language, use that
+            if self.lang:
+                headers['Accept-Language'] = self.lang
+            return headers
 
         def _request(self, url, data=None):
             """Performs the passed request and returns meaningful data"""
@@ -319,9 +344,13 @@ class Foursquare(object):
             """https://developer.foursquare.com/docs/users/unfriend"""
             return self.POST('{USER_ID}/unfriend'.format(USER_ID=USER_ID))
 
-        def update(self, params):
+        def update(self, params={}, photo_data=None):
             """https://developer.foursquare.com/docs/users/update"""
-            return self.POST('self/update', params)
+            if photo_data:
+                files = { 'photo': ('photo', photo_data) }
+            else:
+                files = None
+            return self.POST('self/update', data=params, files=files)
 
 
 
@@ -408,13 +437,17 @@ class Foursquare(object):
         """
         Actions
         """
+        def edit(self, VENUE_ID, params={}):
+            """https://developer.foursquare.com/docs/venues/edit"""
+            return self.POST('{VENUE_ID}/edit'.format(VENUE_ID=VENUE_ID), params)
+
         def flag(self, VENUE_ID, params):
             """https://developer.foursquare.com/docs/venues/flag"""
             return self.POST('{VENUE_ID}/flag'.format(VENUE_ID=VENUE_ID), params)
 
-        def edit(self, VENUE_ID, params={}):
-            """https://developer.foursquare.com/docs/venues/edit"""
-            return self.POST('{VENUE_ID}/edit'.format(VENUE_ID=VENUE_ID), params)
+        def marktodo(self, VENUE_ID, params={}):
+            """https://developer.foursquare.com/docs/venues/marktodo"""
+            return self.POST('{VENUE_ID}/marktodo'.format(VENUE_ID=VENUE_ID), params)
 
         def proposeedit(self, VENUE_ID, params):
             """https://developer.foursquare.com/docs/venues/proposeedit"""
@@ -582,13 +615,8 @@ class Foursquare(object):
 
         def add(self, photo_data, params):
             """https://developer.foursquare.com/docs/photos/add"""
-            params['photo'] = poster.encode.MultipartParam(
-                name='photo',
-                filename='photo',
-                filetype='image/jpeg',
-                fileobj=StringIO.StringIO(photo_data)
-            )
-            return self.POST('add', params)
+            files = { 'photo': ('photo', photo_data) }
+            return self.POST('add', data=params, files=files)
 
 
     class Settings(_Endpoint):
@@ -626,6 +654,10 @@ class Foursquare(object):
         """
         Actions
         """
+        def add(self, SPECIAL_ID, params):
+            """https://developer.foursquare.com/docs/specials/add"""
+            return self.POST('add', params)
+
         def flag(self, SPECIAL_ID, params):
             """https://developer.foursquare.com/docs/specials/flag"""
             return self.POST('{SPECIAL_ID}/flag'.format(SPECIAL_ID=SPECIAL_ID), params)
@@ -708,47 +740,49 @@ class Foursquare(object):
 """
 Network helper functions
 """
-def _request_with_retry(url, headers={}, data=None):
-    """Tries to load data from an endpoint using retries"""
+#def _request_with_retry(url, headers={}, data=None):
+def _get(url, headers={}, params=None):
+    """Tries to GET data from an endpoint using retries"""
     for i in xrange(NUM_REQUEST_RETRIES):
         try:
-            return _process_request_with_httplib2(url, headers, data)
+            try:
+                response = requests.get(url, headers=headers, params=params)
+                return _process_response(response)
+            except requests.exceptions.RequestException, e:
+                errmsg = u'Error connecting with foursquare API: {0}'.format(e)
+                log.error(errmsg)
+                raise FoursquareException(errmsg)
         except FoursquareException, e:
             # Some errors don't bear repeating
             if e.__class__ in [InvalidAuth, ParamError, EndpointError, NotAuthorized, Deprecated]: raise
+            # If we've reached our last try, re-raise
             if ((i + 1) == NUM_REQUEST_RETRIES): raise
         time.sleep(1)
 
-def _process_request_with_httplib2(url, headers={}, data=None):
-    """Make the request and handle exception processing"""
-    h = httplib2.Http(**HTTP_KWARGS)
+def _post(url, headers={}, data=None, files=None):
+    """Tries to POST data to an endpoint"""
     try:
-        if data:
-            datagen, multipart_headers = poster.encode.multipart_encode(data)
-            data = ''.join(datagen)
-            headers.update(multipart_headers)
-            method = 'POST'
-        else:
-            method = 'GET'
-        response, body = h.request(url, method, headers=headers, body=data)
-        data = _json_to_data(body)
-        # Default case, Got proper response
-        if response.status == 200:
-            return data
-        return _check_response(data)
-    except httplib2.HttpLib2Error, e:
+        response = requests.post(url, headers=headers, data=data, files=files)
+        return _process_response(response)
+    except requests.exceptions.RequestException, e:
         errmsg = u'Error connecting with foursquare API: {0}'.format(e)
         log.error(errmsg)
         raise FoursquareException(errmsg)
 
-def _json_to_data(s):
-    """Convert a response string to data"""
+def _process_response(response):
+    """Make the request and handle exception processing"""
+    # Read the response as JSON
     try:
-        return json.loads(s)
-    except ValueError, e:
-        errmsg = u'Invalid response: {0}'.format(e)
+        data = response.json()
+    except ValueError:
+        errmsg = u'Invalid response: {0}'.format(response.text())
         log.error(errmsg)
         raise FoursquareException(errmsg)
+
+    # Default case, Got proper response
+    if response.status_code == 200:
+        return data
+    return _check_response(data)
 
 def _check_response(data):
     """Processes the response data"""
