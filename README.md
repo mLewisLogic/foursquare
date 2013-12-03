@@ -144,6 +144,7 @@ Note: endpoint methods map one-to-one with foursquare's endpoints
     venues.flag()
     venues.edit()
     venues.proposeedit()
+    venues.setrole()
 
     checkins()
     checkins.add()
