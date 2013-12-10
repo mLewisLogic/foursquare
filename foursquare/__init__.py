@@ -104,6 +104,16 @@ class Foursquare(object):
     def set_access_token(self, access_token):
         """Update the access token to use"""
         self.base_requester.set_token(access_token)
+    
+    @property
+    def rate_limit(self):
+        """Returns the maximum rate limit for the last API call i.e. X-RateLimit-Limit"""
+        return self.base_requester.rate_limit
+
+    @property
+    def rate_remaining(self):
+        """Returns the remaining rate limit for the last API call i.e. X-RateLimit-Remaining"""
+        return self.base_requester.rate_remaining
 
     class OAuth(object):
         """Handles OAuth authentication procedures and helps retrieve tokens"""
@@ -149,6 +159,8 @@ class Foursquare(object):
             self.version = version if version else API_VERSION
             self.lang = lang
             self.multi_requests = list()
+            self.rate_limit = None
+            self.rate_remaining = None            
 
         def set_token(self, access_token):
             """Set the OAuth token for this requester"""
@@ -169,7 +181,10 @@ class Foursquare(object):
                 API_ENDPOINT=API_ENDPOINT,
                 path=path
             )
-            return _get(url, headers=headers, params=params)['response']
+            res = _get(url, headers=headers, params=params)
+            self.rate_limit = res['response'].headers['X-RateLimit-Limit']
+            self.rate_remaining = res['response'].headers['X-RateLimit-Remaining']
+            return res['data']['response']
 
         def add_multi_request(self, path, params={}):
             """Add multi request to list and return the number of requests added"""
@@ -191,7 +206,10 @@ class Foursquare(object):
                 API_ENDPOINT=API_ENDPOINT,
                 path=path
             )
-            return _post(url, headers=headers, data=data, files=files)['response']
+            res = _post(url, headers=headers, data=data, files=files)
+            self.rate_limit = res['response'].headers['X-RateLimit-Limit']
+            self.rate_remaining = res['response'].headers['X-RateLimit-Remaining']            
+            return res['data']['response']
 
         def _enrich_params(self, params):
             """Enrich the params dict"""
@@ -781,7 +799,7 @@ def _process_response(response):
 
     # Default case, Got proper response
     if response.status_code == 200:
-        return data
+        return {'response':response, 'data':data}
     return _check_response(data)
 
 def _check_response(data):
