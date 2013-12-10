@@ -453,6 +453,11 @@ class Foursquare(object):
             """https://developer.foursquare.com/docs/venues/proposeedit"""
             return self.POST('{VENUE_ID}/proposeedit'.format(VENUE_ID=VENUE_ID), params)
 
+        def setrole(self, VENUE_ID, params):
+            """https://developer.foursquare.com/docs/venues/setrole"""
+            return self.POST('{VENUE_ID}/setrole'.format(VENUE_ID=VENUE_ID), params)
+
+
 
     class Checkins(_Endpoint):
         """Checkin specific endpoint"""
