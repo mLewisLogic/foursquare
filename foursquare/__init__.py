@@ -775,7 +775,7 @@ def _process_response(response):
     try:
         data = response.json()
     except ValueError:
-        errmsg = u'Invalid response: {0}'.format(response.text())
+        errmsg = u'Invalid response: {0}'.format(response.text)
         log.error(errmsg)
         raise FoursquareException(errmsg)
 
