@@ -452,6 +452,18 @@ class Foursquare(object):
             """https://developer.foursquare.com/docs/venues/tips"""
             return self.GET('{VENUE_ID}/tips'.format(VENUE_ID=VENUE_ID), params, multi=multi)
 
+        def nextvenues(self, VENUE_ID, params={}, multi=False):
+            """https://developer.foursquare.com/docs/venues/nextvenues"""
+            return self.GET('{VENUE_ID}/nextvenues'.format(VENUE_ID=VENUE_ID), params, multi=multi)
+
+        def likes(self, VENUE_ID, params={}, multi=False):
+            """https://developer.foursquare.com/docs/venues/likes"""
+            return self.GET('{VENUE_ID}/likes'.format(VENUE_ID=VENUE_ID), params, multi=multi)
+
+        def hours(self, VENUE_ID, params={}, multi=False):
+            """https://developer.foursquare.com/docs/venues/hours"""
+            return self.GET('{VENUE_ID}/hours'.format(VENUE_ID=VENUE_ID), params, multi=multi)
+
         """
         Actions
         """
