@@ -32,6 +32,20 @@ except ImportError:
     pass
 
 
+# Helpful for debugging what goes in and out
+NETWORK_DEBUG = False
+if NETWORK_DEBUG:
+    # These two lines enable debugging at httplib level (requests->urllib3->httplib)
+    # You will see the REQUEST, including HEADERS and DATA, and RESPONSE with HEADERS but without DATA.
+    # The only thing missing will be the response.body which is not logged.
+    import httplib
+    httplib.HTTPConnection.debuglevel = 1
+    # You must initialize logging, otherwise you'll not see debug output.
+    logging.basicConfig() 
+    logging.getLogger().setLevel(logging.DEBUG)
+    requests_log = logging.getLogger("requests.packages.urllib3")
+    requests_log.setLevel(logging.DEBUG)
+    requests_log.propagate = True
 
 
 # Default API version. Move this forward as the library is maintained and kept current
@@ -358,7 +372,7 @@ class Foursquare(object):
                 files = { 'photo': ('photo', photo_data) }
             else:
                 files = None
-            return self.POST('self/update', data=params, files=files)
+            return self.POST('self/update', data={}, files=files)
 
 
 
