@@ -68,6 +68,8 @@ NUM_REQUEST_RETRIES = 3
 # Max number of sub-requests per multi request
 MAX_MULTI_REQUESTS = 5
 
+# Change this if your Python distribution has issues with Foursquare's SSL cert
+VERIFY_SSL = True
 
 
 # Generic foursquare exception
@@ -781,7 +783,7 @@ def _get(url, headers={}, params=None):
     for i in xrange(NUM_REQUEST_RETRIES):
         try:
             try:
-                response = requests.get(url, headers=headers, params=param_string)
+                response = requests.get(url, headers=headers, params=param_string, verify=VERIFY_SSL)
                 return _process_response(response)
             except requests.exceptions.RequestException, e:
                 errmsg = u'Error connecting with foursquare API: {0}'.format(e)
@@ -797,7 +799,7 @@ def _get(url, headers={}, params=None):
 def _post(url, headers={}, data=None, files=None):
     """Tries to POST data to an endpoint"""
     try:
-        response = requests.post(url, headers=headers, data=data, files=files)
+        response = requests.post(url, headers=headers, data=data, files=files, verify=VERIFY_SSL)
         return _process_response(response)
     except requests.exceptions.RequestException, e:
         errmsg = u'Error connecting with foursquare API: {0}'.format(e)
