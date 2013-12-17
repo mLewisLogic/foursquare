@@ -372,7 +372,7 @@ class Foursquare(object):
                 files = { 'photo': ('photo', photo_data) }
             else:
                 files = None
-            return self.POST('self/update', data={}, files=files)
+            return self.POST('self/update', data=params, files=files)
 
 
 
