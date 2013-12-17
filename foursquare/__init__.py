@@ -759,7 +759,7 @@ class Foursquare(object):
                 for response in responses:
                     # Make sure the response was valid
                     try:
-                        _check_response(response)
+                        _raise_error_from_response(response)
                         yield response['response']
                     except FoursquareException, e:
                         yield e

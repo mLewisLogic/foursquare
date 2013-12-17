@@ -27,7 +27,7 @@ setup(
         ],
     packages=find_packages(),
     install_requires=[
-        'requests>=2.0',
+        'requests>=2.1',
     ],
     license='MIT License',
     keywords='foursquare api',
