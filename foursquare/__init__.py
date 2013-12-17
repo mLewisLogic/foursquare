@@ -181,10 +181,10 @@ class Foursquare(object):
                 API_ENDPOINT=API_ENDPOINT,
                 path=path
             )
-            res = _get(url, headers=headers, params=params)
-            self.rate_limit = res['response'].headers['X-RateLimit-Limit']
-            self.rate_remaining = res['response'].headers['X-RateLimit-Remaining']
-            return res['data']['response']
+            result = _get(url, headers=headers, params=params)
+            self.rate_limit = result['headers']['X-RateLimit-Limit']
+            self.rate_remaining = result['headers']['X-RateLimit-Remaining']
+            return result['data']['response']
 
         def add_multi_request(self, path, params={}):
             """Add multi request to list and return the number of requests added"""
@@ -206,10 +206,10 @@ class Foursquare(object):
                 API_ENDPOINT=API_ENDPOINT,
                 path=path
             )
-            res = _post(url, headers=headers, data=data, files=files)
-            self.rate_limit = res['response'].headers['X-RateLimit-Limit']
-            self.rate_remaining = res['response'].headers['X-RateLimit-Remaining']            
-            return res['data']['response']
+            result = _post(url, headers=headers, data=data, files=files)
+            self.rate_limit = result['headers']['X-RateLimit-Limit']
+            self.rate_remaining = result['headers']['X-RateLimit-Remaining']            
+            return result['data']['response']
 
         def _enrich_params(self, params):
             """Enrich the params dict"""
@@ -802,10 +802,10 @@ def _process_response(response):
 
     # Default case, Got proper response
     if response.status_code == 200:
-        return {'response':response, 'data':data}
-    return _check_response(data)
+        return { 'headers': response.headers, 'data': data }
+    return _raise_error_from_response(data)
 
-def _check_response(data):
+def _raise_error_from_response(data):
     """Processes the response data"""
     # Check the meta-data for why this request failed
     meta = data.get('meta')
