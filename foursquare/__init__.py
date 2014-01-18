@@ -18,6 +18,7 @@ import inspect
 import math
 import time
 import urllib
+import sys
 
 # 3rd party libraries that might not be present during initial install
 #  but we need to import for the version #
@@ -31,12 +32,26 @@ except ImportError:
     pass
 
 
+# Helpful for debugging what goes in and out
+NETWORK_DEBUG = False
+if NETWORK_DEBUG:
+    # These two lines enable debugging at httplib level (requests->urllib3->httplib)
+    # You will see the REQUEST, including HEADERS and DATA, and RESPONSE with HEADERS but without DATA.
+    # The only thing missing will be the response.body which is not logged.
+    import httplib
+    httplib.HTTPConnection.debuglevel = 1
+    # You must initialize logging, otherwise you'll not see debug output.
+    logging.basicConfig() 
+    logging.getLogger().setLevel(logging.DEBUG)
+    requests_log = logging.getLogger("requests.packages.urllib3")
+    requests_log.setLevel(logging.DEBUG)
+    requests_log.propagate = True
 
 
 # Default API version. Move this forward as the library is maintained and kept current
 API_VERSION_YEAR  = '2013'
-API_VERSION_MONTH = '11'
-API_VERSION_DAY   = '13'
+API_VERSION_MONTH = '12'
+API_VERSION_DAY   = '17'
 API_VERSION = '{year}{month}{day}'.format(year=API_VERSION_YEAR, month=API_VERSION_MONTH, day=API_VERSION_DAY)
 
 # Library versioning matches supported foursquare API version
@@ -53,6 +68,8 @@ NUM_REQUEST_RETRIES = 3
 # Max number of sub-requests per multi request
 MAX_MULTI_REQUESTS = 5
 
+# Change this if your Python distribution has issues with Foursquare's SSL cert
+VERIFY_SSL = True
 
 
 # Generic foursquare exception
@@ -104,6 +121,16 @@ class Foursquare(object):
     def set_access_token(self, access_token):
         """Update the access token to use"""
         self.base_requester.set_token(access_token)
+    
+    @property
+    def rate_limit(self):
+        """Returns the maximum rate limit for the last API call i.e. X-RateLimit-Limit"""
+        return self.base_requester.rate_limit
+
+    @property
+    def rate_remaining(self):
+        """Returns the remaining rate limit for the last API call i.e. X-RateLimit-Remaining"""
+        return self.base_requester.rate_remaining
 
     class OAuth(object):
         """Handles OAuth authentication procedures and helps retrieve tokens"""
@@ -149,6 +176,8 @@ class Foursquare(object):
             self.version = version if version else API_VERSION
             self.lang = lang
             self.multi_requests = list()
+            self.rate_limit = None
+            self.rate_remaining = None            
 
         def set_token(self, access_token):
             """Set the OAuth token for this requester"""
@@ -162,14 +191,16 @@ class Foursquare(object):
             if kwargs.get('multi') is True:
                 return self.add_multi_request(path, params)
             # Continue processing normal requests
-            headers = self._get_headers()
+            headers = self._create_headers()
             params = self._enrich_params(params)
-            params = self._urlencode_params(params)
             url = '{API_ENDPOINT}{path}'.format(
                 API_ENDPOINT=API_ENDPOINT,
                 path=path
             )
-            return _get(url, headers=headers, params=params)['response']
+            result = _get(url, headers=headers, params=params)
+            self.rate_limit = result['headers']['X-RateLimit-Limit']
+            self.rate_remaining = result['headers']['X-RateLimit-Remaining']
+            return result['data']['response']
 
         def add_multi_request(self, path, params={}):
             """Add multi request to list and return the number of requests added"""
@@ -185,13 +216,16 @@ class Foursquare(object):
                 data = data.copy()
             if files is not None:
                 files = files.copy()
-            headers = self._get_headers()
+            headers = self._create_headers()
             data = self._enrich_params(data)
             url = '{API_ENDPOINT}{path}'.format(
                 API_ENDPOINT=API_ENDPOINT,
                 path=path
             )
-            return _post(url, headers=headers, data=data, files=files)['response']
+            result = _post(url, headers=headers, data=data, files=files)
+            self.rate_limit = result['headers']['X-RateLimit-Limit']
+            self.rate_remaining = result['headers']['X-RateLimit-Remaining']            
+            return result['data']['response']
 
         def _enrich_params(self, params):
             """Enrich the params dict"""
@@ -204,17 +238,7 @@ class Foursquare(object):
                 params['oauth_token'] = self.oauth_token
             return params
 
-        def _urlencode_params(self, params):
-            """Urlencode string value params without quote_plus"""
-            # We need to do this because Foursquare does not properly handle quote_plus'd strings for queries.
-            for k, v in params.iteritems():
-                if isinstance(v, basestring):
-                    # We need to exclude commas because Foursquare, once again, can handle those
-                    #  being urlencoded for lat,longs.
-                    params[k] = urllib.quote(v, ',')
-            return params
-
-        def _get_headers(self):
+        def _create_headers(self):
             """Get the headers we need"""
             headers = {}
             # If we specified a specific language, use that
@@ -434,6 +458,18 @@ class Foursquare(object):
             """https://developer.foursquare.com/docs/venues/tips"""
             return self.GET('{VENUE_ID}/tips'.format(VENUE_ID=VENUE_ID), params, multi=multi)
 
+        def nextvenues(self, VENUE_ID, params={}, multi=False):
+            """https://developer.foursquare.com/docs/venues/nextvenues"""
+            return self.GET('{VENUE_ID}/nextvenues'.format(VENUE_ID=VENUE_ID), params, multi=multi)
+
+        def likes(self, VENUE_ID, params={}, multi=False):
+            """https://developer.foursquare.com/docs/venues/likes"""
+            return self.GET('{VENUE_ID}/likes'.format(VENUE_ID=VENUE_ID), params, multi=multi)
+
+        def hours(self, VENUE_ID, params={}, multi=False):
+            """https://developer.foursquare.com/docs/venues/hours"""
+            return self.GET('{VENUE_ID}/hours'.format(VENUE_ID=VENUE_ID), params, multi=multi)
+
         """
         Actions
         """
@@ -452,6 +488,11 @@ class Foursquare(object):
         def proposeedit(self, VENUE_ID, params):
             """https://developer.foursquare.com/docs/venues/proposeedit"""
             return self.POST('{VENUE_ID}/proposeedit'.format(VENUE_ID=VENUE_ID), params)
+
+        def setrole(self, VENUE_ID, params):
+            """https://developer.foursquare.com/docs/venues/setrole"""
+            return self.POST('{VENUE_ID}/setrole'.format(VENUE_ID=VENUE_ID), params)
+
 
 
     class Checkins(_Endpoint):
@@ -720,7 +761,7 @@ class Foursquare(object):
                 for response in responses:
                     # Make sure the response was valid
                     try:
-                        _check_response(response)
+                        _raise_error_from_response(response)
                         yield response['response']
                     except FoursquareException, e:
                         yield e
@@ -738,10 +779,11 @@ Network helper functions
 #def _request_with_retry(url, headers={}, data=None):
 def _get(url, headers={}, params=None):
     """Tries to GET data from an endpoint using retries"""
+    param_string = _foursquare_urlencode(params)
     for i in xrange(NUM_REQUEST_RETRIES):
         try:
             try:
-                response = requests.get(url, headers=headers, params=params)
+                response = requests.get(url, headers=headers, params=param_string, verify=VERIFY_SSL)
                 return _process_response(response)
             except requests.exceptions.RequestException, e:
                 errmsg = u'Error connecting with foursquare API: {0}'.format(e)
@@ -757,7 +799,7 @@ def _get(url, headers={}, params=None):
 def _post(url, headers={}, data=None, files=None):
     """Tries to POST data to an endpoint"""
     try:
-        response = requests.post(url, headers=headers, data=data, files=files)
+        response = requests.post(url, headers=headers, data=data, files=files, verify=VERIFY_SSL)
         return _process_response(response)
     except requests.exceptions.RequestException, e:
         errmsg = u'Error connecting with foursquare API: {0}'.format(e)
@@ -770,16 +812,16 @@ def _process_response(response):
     try:
         data = response.json()
     except ValueError:
-        errmsg = u'Invalid response: {0}'.format(response.text())
+        errmsg = u'Invalid response: {0}'.format(response.text)
         log.error(errmsg)
         raise FoursquareException(errmsg)
 
     # Default case, Got proper response
     if response.status_code == 200:
-        return data
-    return _check_response(data)
+        return { 'headers': response.headers, 'data': data }
+    return _raise_error_from_response(data)
 
-def _check_response(data):
+def _raise_error_from_response(data):
     """Processes the response data"""
     # Check the meta-data for why this request failed
     meta = data.get('meta')
@@ -798,3 +840,64 @@ def _check_response(data):
         errmsg = u'Response format invalid, missing meta property. data: {0}'.format(data)
         log.error(errmsg)
         raise FoursquareException(errmsg)
+
+def _as_utf8(s):
+    try:
+        return str(s)
+    except UnicodeEncodeError:
+        return unicode(s).encode('utf-8')
+
+def _foursquare_urlencode(query, doseq=0, safe_chars="&/,+"):
+    """Gnarly hack because Foursquare doesn't properly handle standard url encoding"""
+    # Original doc: http://docs.python.org/2/library/urllib.html#urllib.urlencode
+    # Works the same way as urllib.urlencode except two differences -
+    # 1. it uses `quote()` instead of `quote_plus()`
+    # 2. it takes an extra parameter called `safe_chars` which is a string
+    #    having the characters which should not be encoded.
+    #
+    # Courtesy of github.com/iambibhas
+    if hasattr(query,"items"):
+        # mapping objects
+        query = query.items()
+    else:
+        # it's a bother at times that strings and string-like objects are
+        # sequences...
+        try:
+            # non-sequence items should not work with len()
+            # non-empty strings will fail this
+            if len(query) and not isinstance(query[0], tuple):
+                raise TypeError
+            # zero-length sequences of all types will get here and succeed,
+            # but that's a minor nit - since the original implementation
+            # allowed empty dicts that type of behavior probably should be
+            # preserved for consistency
+        except TypeError:
+            ty,va,tb = sys.exc_info()
+            raise TypeError, "not a valid non-string sequence or mapping object", tb
+
+    l = []
+    if not doseq:
+        # preserve old behavior
+        for k, v in query:
+            k = urllib.quote(_as_utf8(k), safe=safe_chars)
+            v = urllib.quote(_as_utf8(v), safe=safe_chars)
+            l.append(k + '=' + v)
+    else:
+        for k, v in query:
+            k = urllib.quote(_as_utf8(k), safe=safe_chars)
+            if isinstance(v, (str, unicode)):
+                v = urllib.quote(_as_utf8(v), safe=safe_chars)
+                l.append(k + '=' + v)
+            else:
+                try:
+                    # is this a sufficient test for sequence-ness?
+                    len(v)
+                except TypeError:
+                    # not a sequence
+                    v = urllib.quote(_as_utf8(v), safe=safe_chars)
+                    l.append(k + '=' + v)
+                else:
+                    # loop over the sequence
+                    for elt in v:
+                        l.append(k + '=' + urllib.quote(_as_utf8(elt)))
+    return '&'.join(l)
