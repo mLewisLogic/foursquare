@@ -30,7 +30,7 @@ class VenuesEndpointTestCase(BaseAuthenticatedEndpointTestCase):
         assert 'groups' in response
 
     def test_explore_section(self):
-        response = self.api.venues.explore({'ll': self.default_geo, 'section': 'coffee'})
+        response = self.api.venues.explore({'ll': self.default_geo, 'section': 'café'})
         assert 'groups' in response
 
     def test_explore_query(self):
