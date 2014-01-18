@@ -841,6 +841,12 @@ def _raise_error_from_response(data):
         log.error(errmsg)
         raise FoursquareException(errmsg)
 
+def _as_utf8(s):
+    try:
+        return str(s)
+    except UnicodeEncodeError:
+        return unicode(s).encode('utf-8')
+
 def _foursquare_urlencode(query, doseq=0, safe_chars="&/,+"):
     """Gnarly hack because Foursquare doesn't properly handle standard url encoding"""
     # Original doc: http://docs.python.org/2/library/urllib.html#urllib.urlencode
@@ -873,20 +879,14 @@ def _foursquare_urlencode(query, doseq=0, safe_chars="&/,+"):
     if not doseq:
         # preserve old behavior
         for k, v in query:
-            k = urllib.quote(str(k), safe=safe_chars)
-            v = urllib.quote(str(v), safe=safe_chars)
+            k = urllib.quote(_as_utf8(k), safe=safe_chars)
+            v = urllib.quote(_as_utf8(v), safe=safe_chars)
             l.append(k + '=' + v)
     else:
         for k, v in query:
-            k = urllib.quote(str(k), safe=safe_chars)
-            if isinstance(v, str):
-                v = urllib.quote(v, safe=safe_chars)
-                l.append(k + '=' + v)
-            elif urllib._is_unicode(v):
-                # is there a reasonable way to convert to ASCII?
-                # encode generates a string, but "replace" or "ignore"
-                # lose information and "strict" can raise UnicodeError
-                v = urllib.quote(v.encode("ASCII","replace"), safe=safe_chars)
+            k = urllib.quote(_as_utf8(k), safe=safe_chars)
+            if isinstance(v, (str, unicode)):
+                v = urllib.quote(_as_utf8(v), safe=safe_chars)
                 l.append(k + '=' + v)
             else:
                 try:
@@ -894,10 +894,10 @@ def _foursquare_urlencode(query, doseq=0, safe_chars="&/,+"):
                     len(v)
                 except TypeError:
                     # not a sequence
-                    v = urllib.quote(str(v), safe=safe_chars)
+                    v = urllib.quote(_as_utf8(v), safe=safe_chars)
                     l.append(k + '=' + v)
                 else:
                     # loop over the sequence
                     for elt in v:
-                        l.append(k + '=' + urllib.quote(str(elt)))
+                        l.append(k + '=' + urllib.quote(_as_utf8(elt)))
     return '&'.join(l)
