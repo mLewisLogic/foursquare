@@ -15,7 +15,13 @@
 .coverage
 .Python
 
+# Ruby specific (for Travis)
+.rvmrc
+.ruby-gemset
+.ruby-version
+
 # IDEs
 .idea
+.project
 *.iml
 
