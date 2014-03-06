@@ -246,14 +246,6 @@ class Foursquare(object):
                 headers['Accept-Language'] = self.lang
             return headers
 
-        def _request(self, url, data=None):
-            """Performs the passed request and returns meaningful data"""
-            headers = {}
-            # If we specified a specific language, use that
-            if self.lang:
-                headers['Accept-Language'] = self.lang
-            return _request_with_retry(url, headers, data)['response']
-
 
     class _Endpoint(object):
         """Generic endpoint class"""
