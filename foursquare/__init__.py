@@ -763,7 +763,13 @@ class Foursquare(object):
             """Returns the expected number of API calls to process"""
             return int(math.ceil(len(self.requester.multi_requests) / float(MAX_MULTI_REQUESTS)))
 
-
+def _log_and_raise_exception(msg, data, cls=FoursquareException):
+  """Calls log.error() then raises an exception of class cls"""
+  data = u'{0}'.format(data)
+  # We put data as a argument for log.error() so error tracking systems such
+  # as Sentry will properly group errors together by msg only
+  log.error(u'{0}: %s'.format(msg), data)
+  raise cls(u'{0}: {1}'.format(msg, data))
 
 """
 Network helper functions
@@ -778,9 +784,8 @@ def _get(url, headers={}, params=None):
                 response = requests.get(url, headers=headers, params=param_string, verify=VERIFY_SSL)
                 return _process_response(response)
             except requests.exceptions.RequestException, e:
-                errmsg = u'Error connecting with foursquare API: {0}'.format(e)
-                log.error(errmsg)
-                raise FoursquareException(errmsg)
+                _log_and_raise_exception(
+                    'Error connecting with foursquare API', e)
         except FoursquareException, e:
             # Some errors don't bear repeating
             if e.__class__ in [InvalidAuth, ParamError, EndpointError, NotAuthorized, Deprecated]: raise
@@ -794,9 +799,7 @@ def _post(url, headers={}, data=None, files=None):
         response = requests.post(url, headers=headers, data=data, files=files, verify=VERIFY_SSL)
         return _process_response(response)
     except requests.exceptions.RequestException, e:
-        errmsg = u'Error connecting with foursquare API: {0}'.format(e)
-        log.error(errmsg)
-        raise FoursquareException(errmsg)
+        _log_and_raise_exception('Error connecting with foursquare API', e)
 
 def _process_response(response):
     """Make the request and handle exception processing"""
@@ -804,9 +807,7 @@ def _process_response(response):
     try:
         data = response.json()
     except ValueError:
-        errmsg = u'Invalid response: {0}'.format(response.text)
-        log.error(errmsg)
-        raise FoursquareException(errmsg)
+        _log_and_raise_exception('Invalid response', response.text)
 
     # Default case, Got proper response
     if response.status_code == 200:
@@ -825,13 +826,10 @@ def _raise_error_from_response(data):
         if exc:
             raise exc(meta.get('errorDetail'))
         else:
-            errmsg = u'Unknown error. meta: {0}'.format(meta)
-            log.error(errmsg)
-            raise FoursquareException(errmsg)
+            _log_and_raise_exception('Unknown error. meta', meta)
     else:
-        errmsg = u'Response format invalid, missing meta property. data: {0}'.format(data)
-        log.error(errmsg)
-        raise FoursquareException(errmsg)
+        _log_and_raise_exception(
+            'Response format invalid, missing meta property. data', data)
 
 def _as_utf8(s):
     try:
