@@ -784,8 +784,7 @@ def _get(url, headers={}, params=None):
                 response = requests.get(url, headers=headers, params=param_string, verify=VERIFY_SSL)
                 return _process_response(response)
             except requests.exceptions.RequestException, e:
-                _log_and_raise_exception(
-                    'Error connecting with foursquare API', e)
+                _log_and_raise_exception('Error connecting with foursquare API', e)
         except FoursquareException, e:
             # Some errors don't bear repeating
             if e.__class__ in [InvalidAuth, ParamError, EndpointError, NotAuthorized, Deprecated]: raise
@@ -828,8 +827,7 @@ def _raise_error_from_response(data):
         else:
             _log_and_raise_exception('Unknown error. meta', meta)
     else:
-        _log_and_raise_exception(
-            'Response format invalid, missing meta property. data', data)
+        _log_and_raise_exception('Response format invalid, missing meta property. data', data)
 
 def _as_utf8(s):
     try:
