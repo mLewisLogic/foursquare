@@ -84,10 +84,6 @@ class TipsUserlessEndpointTestCase(BaseUserlessEndpointTestCase):
         response = self.api.tips.search({'ll': self.default_geo, 'offset': 3})
         assert 'tips' in response
 
-    def test_search_filter(self):
-        response = self.api.tips.search({'ll': self.default_geo, 'filter': 'friends'})
-        assert 'tips' in response
-
     def test_search_query(self):
         response = self.api.tips.search({'ll': self.default_geo, 'query': 'donuts'})
         assert 'tips' in response
@@ -111,8 +107,4 @@ class TipsUserlessEndpointTestCase(BaseUserlessEndpointTestCase):
 
     def test_listed(self):
         response = self.api.tips.listed(self.default_tipid)
-        assert 'lists' in response
-
-    def test_listed_group(self):
-        response = self.api.tips.listed(self.default_tipid, {'group': 'friends'})
         assert 'lists' in response

@@ -241,10 +241,6 @@ class VenuesUserlessEndpointTestCase(BaseUserlessEndpointTestCase):
         response = self.api.venues.listed(self.default_venueid)
         assert 'lists' in response
 
-    def test_listed_group(self):
-        response = self.api.venues.listed(self.default_venueid, {'group': 'friends'})
-        assert 'lists' in response
-
     def test_listed_limit(self):
         response = self.api.venues.listed(self.default_venueid, {'limit': 10})
         assert 'lists' in response

@@ -36,11 +36,6 @@ class VenuesUserlessEndpointTestCase(BaseUserlessEndpointTestCase):
         assert 'user' in response
 
 
-    def test_search(self):
-        response = self.api.pages.search({'name': 'Starbucks'})
-        assert 'results' in response
-
-
     def test_venues(self):
         response = self.api.pages.venues(self.default_pageid)
         assert 'venues' in response
