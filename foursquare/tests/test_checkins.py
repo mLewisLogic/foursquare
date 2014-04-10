@@ -12,9 +12,8 @@ class CheckinsEndpointTestCase(BaseAuthenticatedEndpointTestCase):
     General
     """
     def test_checkin(self):
-        response = self.api.checkins(self.default_checkinid)
+        response = self.api.checkins.add(params={'venueId': self.default_venueid})
         assert 'checkin' in response
-
 
     def test_recent(self):
         response = self.api.checkins.recent()

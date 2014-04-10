@@ -24,7 +24,6 @@ class BaseEndpointTestCase(unittest.TestCase):
     default_geo_radius = 100
     default_userid = u'1070527'
     default_venueid = u'40a55d80f964a52020f31ee3'
-    default_checkinid = u'51019f65e4b07f82620061f7'
     default_tipid = u'4b5e662a70c603bba7d790b4'
     default_listid = u'32/tips'
     default_photoid = u'4d0fb8162d39a340637dc42b'
