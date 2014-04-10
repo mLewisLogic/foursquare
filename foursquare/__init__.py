@@ -360,10 +360,10 @@ class Foursquare(object):
             """https://developer.foursquare.com/docs/users/unfriend"""
             return self.POST('{USER_ID}/unfriend'.format(USER_ID=USER_ID))
 
-        def update(self, params={}, photo_data=None):
+        def update(self, params={}, photo_data=None, photo_content_type='image/jpeg'):
             """https://developer.foursquare.com/docs/users/update"""
             if photo_data:
-                files = { 'photo': ('photo', photo_data) }
+                files = { 'photo': ('photo', photo_data, photo_content_type) }
             else:
                 files = None
             return self.POST('self/update', data=params, files=files)
@@ -641,9 +641,9 @@ class Foursquare(object):
             """https://developer.foursquare.com/docs/photos/photos"""
             return self.GET('{PHOTO_ID}'.format(PHOTO_ID=PHOTO_ID), multi=multi)
 
-        def add(self, photo_data, params):
+        def add(self, photo_data, params, photo_content_type='image/jpeg'):
             """https://developer.foursquare.com/docs/photos/add"""
-            files = { 'photo': ('photo', photo_data) }
+            files = { 'photo': ('photo', photo_data, photo_content_type) }
             return self.POST('add', data=params, files=files)
 
 
