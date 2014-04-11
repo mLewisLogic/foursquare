@@ -22,14 +22,14 @@ class PhotosEndpointTestCase(BaseAuthenticatedEndpointTestCase):
         """Creates a checkin and attaches a photo to it."""
         response = self.api.checkins.add(params={'venueId': self.default_venueid})
         checkin = response.get('checkin')
-        self.assertIsNotNone(checkin)
+        self.assertNotEqual(checkin, None)
 
         photo_data = open(os.path.join(TEST_DATA_DIR, 'test-photo.jpg'), 'rb')
         try:
             response = self.api.photos.add(params={'checkinId': checkin['id']},
                     photo_data=photo_data)
             photo = response.get('photo')
-            self.assertIsNotNone(photo)
+            self.assertNotEqual(photo, None)
             self.assertEquals(300, photo['width'])
             self.assertEquals(300, photo['height'])
         finally:
