@@ -3,11 +3,10 @@
 # (c) 2013 Mike Lewis
 import logging; log = logging.getLogger(__name__)
 
-from . import BaseAuthenticatedEndpointTestCase, BaseUserlessEndpointTestCase
+from . import TEST_DATA_DIR, BaseAuthenticatedEndpointTestCase, BaseUserlessEndpointTestCase
 
 import os
 
-TEST_DATA_DIR = os.path.join(os.path.dirname(__file__), 'testdata')
 
 
 class PhotosEndpointTestCase(BaseAuthenticatedEndpointTestCase):
@@ -24,13 +23,18 @@ class PhotosEndpointTestCase(BaseAuthenticatedEndpointTestCase):
         checkin = response.get('checkin')
         self.assertNotEqual(checkin, None)
 
-        photo_data = open(os.path.join(TEST_DATA_DIR, 'test-photo.jpg'), 'rb')
-        try:
-            response = self.api.photos.add(params={'checkinId': checkin['id']},
-                    photo_data=photo_data)
-            photo = response.get('photo')
-            self.assertNotEqual(photo, None)
-            self.assertEquals(300, photo['width'])
-            self.assertEquals(300, photo['height'])
-        finally:
-            photo_data.close()
+        test_photo = os.path.join(TEST_DATA_DIR, 'test-photo.jpg')
+        # Fail gracefully if we don't have a test photo on disk
+        if os.path.isfile(test_photo):
+            photo_data = open(test_photo, 'rb')
+            try:
+                response = self.api.photos.add(params={'checkinId': checkin['id']}, photo_data=photo_data)
+                assert 'photo' in response
+                photo = response.get('photo')
+                self.assertNotEqual(photo, None)
+                self.assertEquals(300, photo['width'])
+                self.assertEquals(300, photo['height'])
+            finally:
+                photo_data.close()
+        else:
+            print u"Put a 'test-photo.jpg' file in the testdata/ directory to enable this test."

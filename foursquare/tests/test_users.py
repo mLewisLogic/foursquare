@@ -5,7 +5,7 @@ import logging; log = logging.getLogger(__name__)
 
 import os
 
-from . import BaseAuthenticatedEndpointTestCase
+from . import TEST_DATA_DIR, BaseAuthenticatedEndpointTestCase
 
 
 
@@ -119,11 +119,14 @@ class UsersEndpointTestCase(BaseAuthenticatedEndpointTestCase):
         assert response['user']['firstName'] == 'Mike'
 
     def test_update_photo(self):
-        curr_dir = os.path.dirname(os.path.realpath(__file__))
-        profile_photo = os.path.join(curr_dir, 'profile_photo.jpg')
-        # Fail gracefully if we don't have a profile photo on disk
-        if os.path.isfile(profile_photo):
-            response = self.api.users.update(photo_data=open(profile_photo, 'r'))
-            assert 'user' in response
+        test_photo = os.path.join(TEST_DATA_DIR, 'profile_photo.jpg')
+        # Fail gracefully if we don't have a test photo on disk
+        if os.path.isfile(test_photo):
+            photo_data = open(test_photo, 'r')
+            try:
+                response = self.api.users.update(photo_data=photo_data)
+                assert 'user' in response
+            finally:
+                photo_data.close()
         else:
-            print u"Put a 'profile_photo.jpg' file in the tests/ directory to enable this test."
+            print u"Put a 'test-photo.jpg' file in the testdata/ directory to enable this test."

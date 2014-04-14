@@ -14,9 +14,12 @@ if 'CLIENT_ID' in os.environ and 'CLIENT_SECRET' in os.environ and 'ACCESS_TOKEN
 else:
     try:
         from _creds import *
+
     except ImportError:
         print "Please create a creds.py file in this package, based upon creds.example.py"
 
+
+TEST_DATA_DIR = os.path.join(os.path.dirname(__file__), 'testdata')
 
 
 class BaseEndpointTestCase(unittest.TestCase):
@@ -44,8 +47,8 @@ class BaseAuthenticationTestCase(BaseEndpointTestCase):
 class BaseAuthenticatedEndpointTestCase(BaseEndpointTestCase):
     def setUp(self):
         self.api = foursquare.Foursquare(
-            client_id=CLIENT_ID,
-            client_secret=CLIENT_SECRET,
+#            client_id=CLIENT_ID,
+#            client_secret=CLIENT_SECRET,
             access_token=ACCESS_TOKEN
         )
 
