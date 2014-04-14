@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
-# (c) 2013 Mike Lewis
+# (c) 2014 Mike Lewis
 
 CLIENT_ID = u'YOUR_CLIENT_ID'
 CLIENT_SECRET = u'YOUR_CLIENT_SECRET'

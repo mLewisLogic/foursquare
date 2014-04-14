@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
-# (c) 2013 Mike Lewis
+# (c) 2014 Mike Lewis
 
 import os
 import unittest
