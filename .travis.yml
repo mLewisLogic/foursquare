@@ -9,7 +9,6 @@ script:
 - nosetests --with-coverage --cover-package=foursquare
 env:
   global:
-  - secure: HNjTCjx6ylQ8E6w7gf//e73+928XQzgh6fRXRtZJYFyJ84BHl4o+Sghu05efbAeQKaE37dGareAnDnjwnsSQqHTiKhafvLW7QPMv89iddcxkt4gUAoa59mdiypakNSEF0d7rMS7cySKh8Sf2K94/YMR+seCyuGdE4s3VcfLMozI=
-  - secure: mzaInTqqFWnz8dRhLytEc6iOSG+7NqIdAg8gtGZ9Q8pZGlA8iSR+zeocDyf/xxLiOpRsq3mE1Dbm7cgbLkOkkPeZTH0CgcnZEhLfQjZkptduLwPm0LsoNy0jE+ryvp/54mvNDVE7ak91gDxbdMMx5fXEyawOgRwV+WWXSNHAMdg=
-  - secure: u+HSIASfzcTNyCAKNNFyqpOAw+JYGwU3E49hGSuPdgboaU/SKQUURgvc0t0maYCDxvVmZzcfRL2RUuaiBB0H/VJ8sFP2gRYBxnmXIgrMC2/yry5ADdoKwz7QYr3DdKMzZZmFdyEe1KN6gHu5cLEtOkrv+HOPZuO5Puk0WqSw+Hk=
-  - secure: X+kJa67+GeVZ8yLMA5xv5UNO1L9/fcGNaNj5q2AFuwcfocYFo0sule0bG+ZX/YHHY1aR5cakp09ZOokFqyBHGLouLIuy2aAPNB2ugSXfo3npNUMcY/+KKiWO6NLOQxLCTK10tXndVRWEM3yUFeclyowuz3s2X2F1IZBcE1fc5O0=
+  - secure: ZyrUCICwX+Nzyl+iXjQklwlNdLfVuBb3UZRyARIiLfh70xLY2p7CT5+Ngc7l985ETwmXQmvUIIDRvYZnN7XIZhRsX9EMkYBlRIsNoUOaVsdWDTNlj6gBE47BVUvJduUrRgjvoVjeewG+NRv//KtJ1OwPu0tGDRlJdOMd7JGvyOs= # ACCESS_TOKEN
+  - secure: vu1/nBWXAHk5emJkLSkNBJU4nt5IX9v2UAnd6ACZLRKANj1gH4WlX5w60MJ4UJF3HOBABftoBXyWrhs5iaQ0Ub8i71DncyBAEk+Esgck5IuWNhKuKTK+Y5p8f69cnHacC9AFKPJNInKrppoLYE+qaTgdmHAyXdiI/BeiBBxQuB8= # CLIENT_ID
+  - secure: ccozIsQQXnRkghE18z6YCeEExY5sGqwWjCkLJALL58+lwlOC+4t5FE4rV5OL16tyUV7mJ4w6j4waINvE3dVRjUIYQWbr3QQGIgy1f4sa/0QDGmhp2W2fkls2AAUPojE3QfbcxfjiYXDmnEaO5KyyDjNZ6earWIIyqIw08PICJBQ= # CLIENT_SECRET
