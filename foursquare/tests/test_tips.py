@@ -108,3 +108,7 @@ class TipsUserlessEndpointTestCase(BaseUserlessEndpointTestCase):
     def test_listed(self):
         response = self.api.tips.listed(self.default_tipid)
         assert 'lists' in response
+
+    def test_listed_group(self):
+        response = self.api.tips.listed(self.default_tipid, {'group': 'other'})
+        assert 'lists' in response
