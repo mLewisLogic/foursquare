@@ -17,7 +17,7 @@ class VenuesEndpointTestCase(BaseAuthenticatedEndpointTestCase):
 
 
     def test_search(self):
-        response = self.api.pages.search({'name': 'Starbucks'})
+        response = self.api.pages.search(params={'name': 'Starbucks'})
         assert 'results' in response
 
 

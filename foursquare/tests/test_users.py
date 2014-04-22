@@ -22,15 +22,15 @@ class UsersEndpointTestCase(BaseAuthenticatedEndpointTestCase):
         assert 'leaderboard' in response
 
     def test_leaderboard_limit(self):
-        response = self.api.users.leaderboard({'neighbors': 5})
+        response = self.api.users.leaderboard(params={'neighbors': 5})
         assert 'leaderboard' in response
 
     def test_search_twitter(self):
-        response = self.api.users.search({'twitter': u'mLewisLogic'})
+        response = self.api.users.search(params={'twitter': u'mLewisLogic'})
         assert 'results' in response
 
     def test_search_name(self):
-        response = self.api.users.search({'name': u'Mike'})
+        response = self.api.users.search(params={'name': u'Mike'})
         assert 'results' in response
 
     def test_requests(self):
