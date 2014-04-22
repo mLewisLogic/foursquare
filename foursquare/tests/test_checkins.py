@@ -20,9 +20,9 @@ class CheckinsEndpointTestCase(BaseAuthenticatedEndpointTestCase):
         assert 'recent' in response
 
     def test_recent_location(self):
-        response = self.api.checkins.recent({'ll': self.default_geo})
+        response = self.api.checkins.recent(params={'ll': self.default_geo})
         assert 'recent' in response
 
     def test_recent_limit(self):
-        response = self.api.checkins.recent({'limit': 10})
+        response = self.api.checkins.recent(params={'limit': 10})
         assert 'recent' in response

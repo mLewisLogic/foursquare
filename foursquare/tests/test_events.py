@@ -22,7 +22,7 @@ class EventsEndpointTestCase(BaseAuthenticatedEndpointTestCase):
 
 
     def test_search(self):
-        response = self.api.events.search({'domain': u'songkick.com', 'eventId': u'8183976'})
+        response = self.api.events.search(params={'domain': u'songkick.com', 'eventId': u'8183976'})
         assert 'events' in response
 
 
@@ -37,5 +37,5 @@ class EventsUserlessEndpointTestCase(BaseUserlessEndpointTestCase):
 
 
     def test_search(self):
-        response = self.api.events.search({'domain': u'songkick.com', 'eventId': u'8183976'})
+        response = self.api.events.search(params={'domain': u'songkick.com', 'eventId': u'8183976'})
         assert 'events' in response

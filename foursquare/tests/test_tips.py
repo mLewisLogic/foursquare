@@ -73,19 +73,19 @@ class TipsUserlessEndpointTestCase(BaseUserlessEndpointTestCase):
 
 
     def test_search(self):
-        response = self.api.tips.search({'ll': self.default_geo})
+        response = self.api.tips.search(params={'ll': self.default_geo})
         assert 'tips' in response
 
     def test_search_limit(self):
-        response = self.api.tips.search({'ll': self.default_geo, 'limit': 10})
+        response = self.api.tips.search(params={'ll': self.default_geo, 'limit': 10})
         assert 'tips' in response
 
     def test_search_offset(self):
-        response = self.api.tips.search({'ll': self.default_geo, 'offset': 3})
+        response = self.api.tips.search(params={'ll': self.default_geo, 'offset': 3})
         assert 'tips' in response
 
     def test_search_query(self):
-        response = self.api.tips.search({'ll': self.default_geo, 'query': 'donuts'})
+        response = self.api.tips.search(params={'ll': self.default_geo, 'query': 'donuts'})
         assert 'tips' in response
 
 
@@ -97,11 +97,11 @@ class TipsUserlessEndpointTestCase(BaseUserlessEndpointTestCase):
         assert 'done' in response
 
     def test_done_limit(self):
-        response = self.api.tips.done(self.default_tipid, {'limit': 10})
+        response = self.api.tips.done(self.default_tipid, params={'limit': 10})
         assert 'done' in response
 
     def test_done_offset(self):
-        response = self.api.tips.done(self.default_tipid, {'offset': 3})
+        response = self.api.tips.done(self.default_tipid, params={'offset': 3})
         assert 'done' in response
 
 
@@ -110,5 +110,5 @@ class TipsUserlessEndpointTestCase(BaseUserlessEndpointTestCase):
         assert 'lists' in response
 
     def test_listed_group(self):
-        response = self.api.tips.listed(self.default_tipid, {'group': 'other'})
+        response = self.api.tips.listed(self.default_tipid, params={'group': 'other'})
         assert 'lists' in response
