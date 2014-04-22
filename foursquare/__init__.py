@@ -51,7 +51,7 @@ if NETWORK_DEBUG:
 # Default API version. Move this forward as the library is maintained and kept current
 API_VERSION_YEAR  = '2014'
 API_VERSION_MONTH = '04'
-API_VERSION_DAY   = '15'
+API_VERSION_DAY   = '22'
 API_VERSION = '{year}{month}{day}'.format(year=API_VERSION_YEAR, month=API_VERSION_MONTH, day=API_VERSION_DAY)
 
 # Library versioning matches supported foursquare API version
@@ -206,7 +206,7 @@ class Foursquare(object):
             """Add multi request to list and return the number of requests added"""
             url = path
             if params:
-                url += '?{0}'.format(urllib.urlencode(params))
+                url += '?{0}'.format(urllib.quote_plus(params))
             self.multi_requests.append(url)
             return len(self.multi_requests)
 
