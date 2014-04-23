@@ -206,7 +206,9 @@ class Foursquare(object):
             """Add multi request to list and return the number of requests added"""
             url = path
             if params:
-                url += '?{0}'.format(urllib.urlencode(params))
+                # First convert the params into a query string then quote the whole string
+                # so it will fit into the multi request query -as a value for the requests= query param-
+                url += '?{0}'.format(urllib.quote_plus(urllib.urlencode(params)))
             self.multi_requests.append(url)
             return len(self.multi_requests)
 

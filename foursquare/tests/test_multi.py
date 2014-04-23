@@ -22,6 +22,9 @@ class MultiEndpointTestCase(BaseAuthenticatedEndpointTestCase):
         assert 'user' in user_response
         # Resume loading the multi sub-requests
         self.api.users.badges(multi=True)
+        # Throw a call with multiple params in the middle to make sure it gets encoded correctly
+        # and won't affect the other api calls that share the same http request
+        self.api.pages.venues(multi=True, PAGE_ID='1070527', params={'limit': 10, 'offset': 10})
         self.api.users.lists(params={'group': u'friends'}, multi=True)
         self.api.venues.categories(multi=True)
         self.api.checkins.recent(multi=True, params={'limit': 10})
@@ -29,7 +32,7 @@ class MultiEndpointTestCase(BaseAuthenticatedEndpointTestCase):
         self.api.lists(self.default_listid, multi=True)
         self.api.photos(self.default_photoid, multi=True)
         # We are expecting certain responses...
-        expected_responses = ('user', 'leaderboard', 'badges', 'lists', 'categories', 'recent', 'tip', 'list', 'photo',)
+        expected_responses = ('user', 'leaderboard', 'badges', 'venues', 'lists', 'categories', 'recent', 'tip', 'list', 'photo',)
         # Make sure our utility functions are working
         assert len(self.api.multi) == len(expected_responses), u'{0} requests queued. Expecting {1}'.format(
             len(self.api.multi),
