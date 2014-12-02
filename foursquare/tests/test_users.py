@@ -129,4 +129,4 @@ class UsersEndpointTestCase(BaseAuthenticatedEndpointTestCase):
             finally:
                 photo_data.close()
         else:
-            print u"Put a 'test-photo.jpg' file in the testdata/ directory to enable this test."
+            print(u"Put a 'test-photo.jpg' file in the testdata/ directory to enable this test.")

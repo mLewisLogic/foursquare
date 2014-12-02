@@ -13,11 +13,12 @@ except ImportError:
     except ImportError:
         import json
 
-import cStringIO as StringIO
 import inspect
 import math
 import time
-import urllib
+from six.moves.urllib import parse
+from six.moves import xrange
+import six
 import sys
 
 # 3rd party libraries that might not be present during initial install
@@ -148,7 +149,7 @@ class Foursquare(object):
             }
             return '{AUTH_ENDPOINT}?{params}'.format(
                 AUTH_ENDPOINT=AUTH_ENDPOINT,
-                params=urllib.urlencode(params))
+                params=parse.urlencode(params))
 
         def get_token(self, code):
             """Gets the auth token from a user's response"""
@@ -160,7 +161,7 @@ class Foursquare(object):
                 'client_secret': self.client_secret,
                 'grant_type': u'authorization_code',
                 'redirect_uri': self.redirect_uri,
-                'code': unicode(code),
+                'code': str(code),
             }
             # Get the response from the token uri and attempt to parse
             return _get(TOKEN_ENDPOINT, params=params)['data']['access_token']
@@ -208,7 +209,7 @@ class Foursquare(object):
             if params:
                 # First convert the params into a query string then quote the whole string
                 # so it will fit into the multi request query -as a value for the requests= query param-
-                url += '?{0}'.format(urllib.quote_plus(urllib.urlencode(params)))
+                url += '?{0}'.format(parse.quote_plus(parse.urlencode(params)))
             self.multi_requests.append(url)
             return len(self.multi_requests)
 
@@ -757,7 +758,7 @@ class Foursquare(object):
                     try:
                         _raise_error_from_response(response)
                         yield response['response']
-                    except FoursquareException, e:
+                    except FoursquareException as e:
                         yield e
 
         @property
@@ -785,9 +786,9 @@ def _get(url, headers={}, params=None):
             try:
                 response = requests.get(url, headers=headers, params=param_string, verify=VERIFY_SSL)
                 return _process_response(response)
-            except requests.exceptions.RequestException, e:
+            except requests.exceptions.RequestException as e:
                 _log_and_raise_exception('Error connecting with foursquare API', e)
-        except FoursquareException, e:
+        except FoursquareException as e:
             # Some errors don't bear repeating
             if e.__class__ in [InvalidAuth, ParamError, EndpointError, NotAuthorized, Deprecated]: raise
             # If we've reached our last try, re-raise
@@ -799,7 +800,7 @@ def _post(url, headers={}, data=None, files=None):
     try:
         response = requests.post(url, headers=headers, data=data, files=files, verify=VERIFY_SSL)
         return _process_response(response)
-    except requests.exceptions.RequestException, e:
+    except requests.exceptions.RequestException as e:
         _log_and_raise_exception('Error connecting with foursquare API', e)
 
 def _process_response(response):
@@ -835,7 +836,7 @@ def _as_utf8(s):
     try:
         return str(s)
     except UnicodeEncodeError:
-        return unicode(s).encode('utf-8')
+        return unicode(s).encode('utf8')
 
 def _foursquare_urlencode(query, doseq=0, safe_chars="&/,+"):
     """Gnarly hack because Foursquare doesn't properly handle standard url encoding"""
@@ -863,20 +864,20 @@ def _foursquare_urlencode(query, doseq=0, safe_chars="&/,+"):
             # preserved for consistency
         except TypeError:
             ty,va,tb = sys.exc_info()
-            raise TypeError, "not a valid non-string sequence or mapping object", tb
+            raise TypeError("not a valid non-string sequence or mapping object").with_traceback(tb)
 
     l = []
     if not doseq:
         # preserve old behavior
         for k, v in query:
-            k = urllib.quote(_as_utf8(k), safe=safe_chars)
-            v = urllib.quote(_as_utf8(v), safe=safe_chars)
+            k = parse.quote(_as_utf8(k), safe=safe_chars)
+            v = parse.quote(_as_utf8(v), safe=safe_chars)
             l.append(k + '=' + v)
     else:
         for k, v in query:
-            k = urllib.quote(_as_utf8(k), safe=safe_chars)
-            if isinstance(v, (str, unicode)):
-                v = urllib.quote(_as_utf8(v), safe=safe_chars)
+            k = parse.quote(_as_utf8(k), safe=safe_chars)
+            if isinstance(v, six.string_types):
+                v = parse.quote(_as_utf8(v), safe=safe_chars)
                 l.append(k + '=' + v)
             else:
                 try:
@@ -884,10 +885,10 @@ def _foursquare_urlencode(query, doseq=0, safe_chars="&/,+"):
                     len(v)
                 except TypeError:
                     # not a sequence
-                    v = urllib.quote(_as_utf8(v), safe=safe_chars)
+                    v = parse.quote(_as_utf8(v), safe=safe_chars)
                     l.append(k + '=' + v)
                 else:
                     # loop over the sequence
                     for elt in v:
-                        l.append(k + '=' + urllib.quote(_as_utf8(elt)))
+                        l.append(k + '=' + parse.quote(_as_utf8(elt)))
     return '&'.join(l)

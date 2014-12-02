@@ -13,10 +13,9 @@ if 'CLIENT_ID' in os.environ and 'CLIENT_SECRET' in os.environ and 'ACCESS_TOKEN
     ACCESS_TOKEN = os.environ['ACCESS_TOKEN']
 else:
     try:
-        from _creds import *
-
+        from foursquare.tests._creds import *
     except ImportError:
-        print "Please create a creds.py file in this package, based upon creds.example.py"
+        print("Please create a creds.py file in this package, based upon creds.example.py")
 
 
 TEST_DATA_DIR = os.path.join(os.path.dirname(__file__), 'testdata')
