@@ -161,7 +161,7 @@ class Foursquare(object):
                 'client_secret': self.client_secret,
                 'grant_type': u'authorization_code',
                 'redirect_uri': self.redirect_uri,
-                'code': str(code),
+                'code': six.u(code),
             }
             # Get the response from the token uri and attempt to parse
             return _get(TOKEN_ENDPOINT, params=params)['data']['access_token']
