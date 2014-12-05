@@ -24,7 +24,7 @@ class PhotosEndpointTestCase(BaseAuthenticatedEndpointTestCase):
         self.assertNotEqual(checkin, None)
 
         test_photo = os.path.join(TEST_DATA_DIR, 'test-photo.jpg')
-        print(TEST_DATA_DIR)
+
         # Fail gracefully if we don't have a test photo on disk
         if os.path.isfile(test_photo):
             photo_data = open(test_photo, 'rb')
