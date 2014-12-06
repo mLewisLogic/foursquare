@@ -10,13 +10,13 @@ Philosophy:
 
 Features:
 
-* Python 2+3 compatibility (via @youngrok)
+* Python 2+3 compatibility (via [@youngrok](https://github.com/youngrok))
 * OAuth dance
 * Automatic retries
 * Full endpoint coverage (non-merchant)
 * Full test coverage
 * Useful exception classes
-* Multi support (via @beichhor)
+* Multi support (via [@benneic](https://github.com/benneic))
 
 Dependencies:
 
