@@ -14,9 +14,9 @@ class RateLimitTestCase(BaseAuthenticatedEndpointTestCase):
     def test_rate_limit(self):
         # A call is needed to load the value
         self.api.venues(self.default_venueid)
-        assert self.api.rate_limit > 0
+        assert int(self.api.rate_limit) > 0
 
     def test_rate_remaining(self):
         # A call is needed to load the value
         self.api.venues(self.default_venueid)
-        assert self.api.rate_remaining > 0
+        assert int(self.api.rate_remaining) > 0

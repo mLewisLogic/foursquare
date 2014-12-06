@@ -3,7 +3,7 @@
 # (c) 2014 Mike Lewis
 import logging; log = logging.getLogger(__name__)
 
-import itertools
+from six.moves import zip
 
 from . import BaseAuthenticatedEndpointTestCase
 
@@ -42,5 +42,5 @@ class MultiEndpointTestCase(BaseAuthenticatedEndpointTestCase):
             self.api.multi.num_required_api_calls
         )
         # Now make sure the multi call comes back with what we want
-        for response, expected_response in itertools.izip(self.api.multi(), expected_responses):
+        for response, expected_response in zip(self.api.multi(), expected_responses):
             assert expected_response in response, '{0} not in response'.format(expected_response)
