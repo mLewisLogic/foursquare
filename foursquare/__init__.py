@@ -778,7 +778,6 @@ def _log_and_raise_exception(msg, data, cls=FoursquareException):
 """
 Network helper functions
 """
-#def _request_with_retry(url, headers={}, data=None):
 def _get(url, headers={}, params=None):
     """Tries to GET data from an endpoint using retries"""
     param_string = _foursquare_urlencode(params)

@@ -1,6 +1,6 @@
 # foursquare
 
-Python wrapper for the [foursquare v2 API](http://developer.foursquare.com/docs/). Originally developed to power [Fondu](http://fondu.com).
+Python wrapper for the [foursquare API](http://developer.foursquare.com/docs/).
 
 Philosophy:
 
@@ -10,12 +10,13 @@ Philosophy:
 
 Features:
 
+* Python 2+3 compatibility (via @youngrok)
 * OAuth dance
 * Automatic retries
 * Full endpoint coverage (non-merchant)
 * Full test coverage
 * Useful exception classes
-* Multi support (via beichhor)
+* Multi support (via @beichhor)
 
 Dependencies:
 
@@ -131,18 +132,25 @@ Note: endpoint methods map one-to-one with foursquare's endpoints
     venues.add()
     venues.categories()
     venues.explore()
+    venues.managed()
     venues.search()
+    venues.suggestcompletion()
     venues.trending()
     venues.events()
     venues.herenow()
+    venues.links()
     venues.listed()
     venues.menu()
     venues.photos()
     venues.similar()
+    venues.stats()
     venues.tips()
+    venues.nextvenues()
+    venues.likes()
+    venues.hours()
     venues.edit()
     venues.flag()
-    venues.edit()
+    venues.marktodo()
     venues.proposeedit()
     venues.setrole()
 
@@ -193,6 +201,10 @@ Note: endpoint methods map one-to-one with foursquare's endpoints
     events()
     events.categories()
     events.search()
+
+    pages()
+    pages.search()
+    pages.venues()
 
     multi()
 
