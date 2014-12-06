@@ -16,15 +16,16 @@ except ImportError:
 import inspect
 import math
 import time
-from six.moves.urllib import parse
-from six.moves import xrange
-import six
 import sys
 
 # 3rd party libraries that might not be present during initial install
 #  but we need to import for the version #
 try:
     import requests
+
+    from six.moves.urllib import parse
+    from six.moves import xrange
+    import six
 
     # Monkey patch to requests' json using ujson when available;
     # Otherwise it wouldn't affect anything
@@ -56,7 +57,7 @@ API_VERSION_DAY   = '23'
 API_VERSION = '{year}{month}{day}'.format(year=API_VERSION_YEAR, month=API_VERSION_MONTH, day=API_VERSION_DAY)
 
 # Library versioning matches supported foursquare API version
-__version__ = '{year}.{month}.{day}'.format(year=API_VERSION_YEAR, month=API_VERSION_MONTH, day=API_VERSION_DAY)
+__version__ = '{year}.{month}.{day}a'.format(year=API_VERSION_YEAR, month=API_VERSION_MONTH, day=API_VERSION_DAY)
 __author__ = u'Mike Lewis'
 
 AUTH_ENDPOINT = 'https://foursquare.com/oauth2/authenticate'
@@ -777,7 +778,6 @@ def _log_and_raise_exception(msg, data, cls=FoursquareException):
 """
 Network helper functions
 """
-#def _request_with_retry(url, headers={}, data=None):
 def _get(url, headers={}, params=None):
     """Tries to GET data from an endpoint using retries"""
     param_string = _foursquare_urlencode(params)
