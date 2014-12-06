@@ -203,7 +203,6 @@ Note: endpoint methods map one-to-one with foursquare's endpoints
     events.search()
 
     pages()
-    pages.search()
     pages.venues()
 
     multi()

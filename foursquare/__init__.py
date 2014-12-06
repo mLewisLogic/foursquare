@@ -720,10 +720,6 @@ class Foursquare(object):
             """https://developer.foursquare.com/docs/pages/pages"""
             return self.GET('{USER_ID}'.format(USER_ID=USER_ID), multi=multi)
 
-        def search(self, params, multi=False):
-            """https://developer.foursquare.com/docs/pages/search"""
-            return self.GET('search', params, multi=multi)
-
         def venues(self, PAGE_ID, params={}, multi=False):
             """https://developer.foursquare.com/docs/pages/venues"""
             return self.GET('{PAGE_ID}/venues'.format(PAGE_ID=PAGE_ID), params, multi=multi)
