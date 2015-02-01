@@ -53,7 +53,7 @@ if NETWORK_DEBUG:
 # Default API version. Move this forward as the library is maintained and kept current
 API_VERSION_YEAR  = '2015'
 API_VERSION_MONTH = '02'
-API_VERSION_DAY   = '01'
+API_VERSION_DAY   = '02'
 API_VERSION = '{year}{month}{day}'.format(year=API_VERSION_YEAR, month=API_VERSION_MONTH, day=API_VERSION_DAY)
 
 # Library versioning matches supported foursquare API version
@@ -337,9 +337,21 @@ class Foursquare(object):
             """https://developer.foursquare.com/docs/users/photos"""
             return self.GET('{USER_ID}/photos'.format(USER_ID=USER_ID), params, multi=multi)
 
+        def tips(self, USER_ID=u'self', params={}, multi=False):
+            """https://developer.foursquare.com/docs/users/tips"""
+            return self.GET('{USER_ID}/tips'.format(USER_ID=USER_ID), params, multi=multi)
+
+        def todos(self, USER_ID=u'self', params={}, multi=False):
+            """https://developer.foursquare.com/docs/users/todos"""
+            return self.GET('{USER_ID}/todos'.format(USER_ID=USER_ID), params, multi=multi)
+
         def venuehistory(self, USER_ID=u'self', params={}, multi=False):
             """https://developer.foursquare.com/docs/users/venuehistory"""
             return self.GET('{USER_ID}/venuehistory'.format(USER_ID=USER_ID), params, multi=multi)
+
+        def venuelikes(self, USER_ID=u'self', params={}, multi=False):
+            """https://developer.foursquare.com/docs/users/venuelikes"""
+            return self.GET('{USER_ID}/venuelikes'.format(USER_ID=USER_ID), params, multi=multi)
 
         """
         Actions
