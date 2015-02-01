@@ -32,6 +32,7 @@ or
 
 Depending upon your system and virtualenv settings, these may require sudo permissions.
 
+[PyPi page](https://pypi.python.org/pypi/foursquare)
 
 ## Usage
 
