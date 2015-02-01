@@ -101,8 +101,20 @@ class UsersEndpointTestCase(BaseAuthenticatedEndpointTestCase):
         response = self.api.users.photos(params={'offset': 3})
         assert 'photos' in response
 
+    def test_tips(self):
+        response = self.api.users.tips()
+        assert 'tips' in response
+
+    def test_todos(self):
+        response = self.api.users.todos()
+        assert 'todos' in response
+
     def test_venuehistory(self):
         response = self.api.users.venuehistory()
+        assert 'venues' in response
+
+    def test_venuelikes(self):
+        response = self.api.users.venuelikes()
         assert 'venues' in response
 
     """
