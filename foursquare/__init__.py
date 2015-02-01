@@ -53,7 +53,7 @@ if NETWORK_DEBUG:
 # Default API version. Move this forward as the library is maintained and kept current
 API_VERSION_YEAR  = '2015'
 API_VERSION_MONTH = '02'
-API_VERSION_DAY   = '02'
+API_VERSION_DAY   = '01'
 API_VERSION = '{year}{month}{day}'.format(year=API_VERSION_YEAR, month=API_VERSION_MONTH, day=API_VERSION_DAY)
 
 # Library versioning matches supported foursquare API version
