@@ -404,9 +404,9 @@ class Foursquare(object):
             """https://developer.foursquare.com/docs/venues/add"""
             return self.POST('add', params)
 
-        def categories(self, multi=False):
+        def categories(self, params={}, multi=False):
             """https://developer.foursquare.com/docs/venues/categories"""
-            return self.GET('categories', multi=multi)
+            return self.GET('categories', params, multi=multi)
 
         def explore(self, params, multi=False):
             """https://developer.foursquare.com/docs/venues/explore"""
