@@ -43,7 +43,7 @@ if NETWORK_DEBUG:
     import httplib
     httplib.HTTPConnection.debuglevel = 1
     # You must initialize logging, otherwise you'll not see debug output.
-    logging.basicConfig() 
+    logging.basicConfig()
     logging.getLogger().setLevel(logging.DEBUG)
     requests_log = logging.getLogger("requests.packages.urllib3")
     requests_log.setLevel(logging.DEBUG)
@@ -85,6 +85,7 @@ class RateLimitExceeded(FoursquareException): pass
 class Deprecated(FoursquareException): pass
 class ServerError(FoursquareException): pass
 class FailedGeocode(FoursquareException): pass
+class GeocodeTooBig(FoursquareException): pass
 class Other(FoursquareException): pass
 
 error_types = {
@@ -96,6 +97,7 @@ error_types = {
     'deprecated': Deprecated,
     'server_error': ServerError,
     'failed_geocode': FailedGeocode,
+    'geocode_too_big': GeocodeTooBig,
     'other': Other,
 }
 
@@ -123,7 +125,7 @@ class Foursquare(object):
     def set_access_token(self, access_token):
         """Update the access token to use"""
         self.base_requester.set_token(access_token)
-    
+
     @property
     def rate_limit(self):
         """Returns the maximum rate limit for the last API call i.e. X-RateLimit-Limit"""
@@ -179,7 +181,7 @@ class Foursquare(object):
             self.lang = lang
             self.multi_requests = list()
             self.rate_limit = None
-            self.rate_remaining = None            
+            self.rate_remaining = None
 
         def set_token(self, access_token):
             """Set the OAuth token for this requester"""
@@ -228,7 +230,7 @@ class Foursquare(object):
             )
             result = _post(url, headers=headers, data=data, files=files)
             self.rate_limit = result['headers']['X-RateLimit-Limit']
-            self.rate_remaining = result['headers']['X-RateLimit-Remaining']            
+            self.rate_remaining = result['headers']['X-RateLimit-Remaining']
             return result['data']['response']
 
         def _enrich_params(self, params):
