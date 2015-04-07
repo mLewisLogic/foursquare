@@ -14,6 +14,7 @@
 *.swp
 .coverage
 .Python
+pip-selfcheck.json
 
 # Ruby specific (for Travis)
 .rvmrc
