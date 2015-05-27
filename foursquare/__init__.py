@@ -396,9 +396,9 @@ class Foursquare(object):
         """
         General
         """
-        def __call__(self, VENUE_ID, multi=False):
+        def __call__(self, VENUE_ID, params={}, multi=False):
             """https://developer.foursquare.com/docs/venues/venues"""
-            return self.GET('{VENUE_ID}'.format(VENUE_ID=VENUE_ID), multi=multi)
+            return self.GET('{VENUE_ID}'.format(VENUE_ID=VENUE_ID), params, multi=multi)
 
         def add(self, params):
             """https://developer.foursquare.com/docs/venues/add"""
