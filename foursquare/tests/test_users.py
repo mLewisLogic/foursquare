@@ -40,11 +40,6 @@ class UsersEndpointTestCase(BaseAuthenticatedEndpointTestCase):
     """
     Aspects
     """
-    def test_badges(self):
-        response = self.api.users.badges()
-        assert 'sets' in response
-        assert 'badges' in response
-
     def test_checkins(self):
         response = self.api.users.checkins()
         assert 'checkins' in response
