@@ -100,7 +100,7 @@ or
 
 #### Tips
 ##### [Get a specific tip](https://developer.foursquare.com/docs/tips/tips)
-    client.tips('4b5e662a70c603bba7d790b4')
+    client.tips('53deb1f6498e0d374af17ca7')
 ##### [Search for a tip](https://developer.foursquare.com/docs/tips/search)
     client.tips.search(params={'query': 'donuts'})
 
