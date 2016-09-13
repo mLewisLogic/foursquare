@@ -95,10 +95,8 @@ or
     client.venues.edit('40a55d80f964a52020f31ee3', params={'description': 'Best restaurant on the city'})
 
 #### Checkins
-##### [Get recent checkins for yourself](https://developer.foursquare.com/docs/checkins/recent)
+##### [Returns a list of recent checkins from friends](https://developer.foursquare.com/docs/checkins/recent)
     client.checkins.recent()
-##### [Get recent checkins for a friend](https://developer.foursquare.com/docs/checkins/recent)
-    client.checkins.recent('1183247')
 
 #### Tips
 ##### [Get a specific tip](https://developer.foursquare.com/docs/tips/tips)
@@ -111,20 +109,19 @@ or
 Note: endpoint methods map one-to-one with foursquare's endpoints
 
     users()
-    users.leaderboard()
-    users.requests()
     users.search()
-    users.badges()
+    users.requests()
     users.checkins()
     users.all_checkins() [*not a native endpoint*]
     users.friends()
     users.lists()
     users.mayorships()
     users.photos()
+    users.tips()
     users.venuehistory()
+    users.venuelikes()
     users.approve()
     users.deny()
-    users.request()
     users.setpings()
     users.unfriend()
     users.update()
@@ -151,7 +148,6 @@ Note: endpoint methods map one-to-one with foursquare's endpoints
     venues.hours()
     venues.edit()
     venues.flag()
-    venues.marktodo()
     venues.proposeedit()
     venues.setrole()
 
@@ -161,15 +157,10 @@ Note: endpoint methods map one-to-one with foursquare's endpoints
     checkins.addcomment()
     checkins.addpost()
     checkins.deletecomment()
-    checkins.reply()
 
     tips()
     tips.add()
-    tips.search()
-    tips.done()
     tips.listed()
-    tips.markdone()
-    tips.marktodo()
     tips.unmark()
 
     lists()
