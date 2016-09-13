@@ -301,10 +301,6 @@ class Foursquare(object):
         """
         Aspects
         """
-        def badges(self, USER_ID=u'self', multi=False):
-            """https://developer.foursquare.com/docs/users/badges"""
-            return self.GET('{USER_ID}/badges'.format(USER_ID=USER_ID), multi=multi)
-
         def checkins(self, USER_ID=u'self', params={}, multi=False):
             """https://developer.foursquare.com/docs/users/checkins"""
             return self.GET('{USER_ID}/checkins'.format(USER_ID=USER_ID), params, multi=multi)

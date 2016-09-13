@@ -4,8 +4,8 @@ python:
 - '2.7'
 - '3.4'
 install:
-- pip install coverage six --use-mirrors
-- pip install . --use-mirrors
+- pip install coverage six
+- pip install .
 script:
 - nosetests --with-coverage --cover-package=foursquare
 env:
