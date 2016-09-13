@@ -51,9 +51,9 @@ if NETWORK_DEBUG:
 
 
 # Default API version. Move this forward as the library is maintained and kept current
-API_VERSION_YEAR  = '2015'
-API_VERSION_MONTH = '05'
-API_VERSION_DAY   = '26'
+API_VERSION_YEAR  = '2016'
+API_VERSION_MONTH = '09'
+API_VERSION_DAY   = '12'
 API_VERSION = '{year}{month}{day}'.format(year=API_VERSION_YEAR, month=API_VERSION_MONTH, day=API_VERSION_DAY)
 
 # Library versioning matches supported foursquare API version
@@ -286,17 +286,13 @@ class Foursquare(object):
         """
         General
         """
-        def leaderboard(self, params={}, multi=False):
-            """https://developer.foursquare.com/docs/users/leaderboard"""
-            return self.GET('leaderboard', params, multi=multi)
+        def search(self, params, multi=False):
+            """https://developer.foursquare.com/docs/users/search"""
+            return self.GET('search', params, multi=multi)
 
         def requests(self, multi=False):
             """https://developer.foursquare.com/docs/users/requests"""
             return self.GET('requests', multi=multi)
-
-        def search(self, params, multi=False):
-            """https://developer.foursquare.com/docs/users/search"""
-            return self.GET('search', params, multi=multi)
 
         """
         Aspects
@@ -339,10 +335,6 @@ class Foursquare(object):
             """https://developer.foursquare.com/docs/users/tips"""
             return self.GET('{USER_ID}/tips'.format(USER_ID=USER_ID), params, multi=multi)
 
-        def todos(self, USER_ID=u'self', params={}, multi=False):
-            """https://developer.foursquare.com/docs/users/todos"""
-            return self.GET('{USER_ID}/todos'.format(USER_ID=USER_ID), params, multi=multi)
-
         def venuehistory(self, USER_ID=u'self', params={}, multi=False):
             """https://developer.foursquare.com/docs/users/venuehistory"""
             return self.GET('{USER_ID}/venuehistory'.format(USER_ID=USER_ID), params, multi=multi)
@@ -361,10 +353,6 @@ class Foursquare(object):
         def deny(self, USER_ID):
             """https://developer.foursquare.com/docs/users/deny"""
             return self.POST('{USER_ID}/deny'.format(USER_ID=USER_ID))
-
-        def request(self, USER_ID):
-            """https://developer.foursquare.com/docs/users/request"""
-            return self.POST('{USER_ID}/request'.format(USER_ID=USER_ID))
 
         def setpings(self, USER_ID, params):
             """https://developer.foursquare.com/docs/users/setpings"""
@@ -487,10 +475,6 @@ class Foursquare(object):
             """https://developer.foursquare.com/docs/venues/flag"""
             return self.POST('{VENUE_ID}/flag'.format(VENUE_ID=VENUE_ID), params)
 
-        def marktodo(self, VENUE_ID, params={}):
-            """https://developer.foursquare.com/docs/venues/marktodo"""
-            return self.POST('{VENUE_ID}/marktodo'.format(VENUE_ID=VENUE_ID), params)
-
         def proposeedit(self, VENUE_ID, params):
             """https://developer.foursquare.com/docs/venues/proposeedit"""
             return self.POST('{VENUE_ID}/proposeedit'.format(VENUE_ID=VENUE_ID), params)
@@ -532,10 +516,6 @@ class Foursquare(object):
             """https://developer.foursquare.com/docs/checkins/deletecomment"""
             return self.POST('{CHECKIN_ID}/deletecomment'.format(CHECKIN_ID=CHECKIN_ID), params)
 
-        def reply(self, CHECKIN_ID, params):
-            """https://developer.foursquare.com/docs/checkins/reply"""
-            return self.POST('{CHECKIN_ID}/reply'.format(CHECKIN_ID=CHECKIN_ID), params)
-
 
     class Tips(_Endpoint):
         """Tips specific endpoint"""
@@ -549,17 +529,9 @@ class Foursquare(object):
             """https://developer.foursquare.com/docs/tips/add"""
             return self.POST('add', params)
 
-        def search(self, params, multi=False):
-            """https://developer.foursquare.com/docs/tips/add"""
-            return self.GET('search', params, multi=multi)
-
         """
         Aspects
         """
-        def done(self, TIP_ID, params={}, multi=False):
-            """https://developer.foursquare.com/docs/tips/done"""
-            return self.GET('{TIP_ID}/done'.format(TIP_ID=TIP_ID), params, multi=multi)
-
         def listed(self, TIP_ID, params={}, multi=False):
             """https://developer.foursquare.com/docs/tips/listed"""
             return self.GET('{TIP_ID}/listed'.format(TIP_ID=TIP_ID), params, multi=multi)
@@ -567,14 +539,6 @@ class Foursquare(object):
         """
         Actions
         """
-        def markdone(self, TIP_ID):
-            """https://developer.foursquare.com/docs/tips/markdone"""
-            return self.POST('{TIP_ID}/markdone'.format(TIP_ID=TIP_ID))
-
-        def marktodo(self, TIP_ID):
-            """https://developer.foursquare.com/docs/tips/marktodo"""
-            return self.POST('{TIP_ID}/marktodo'.format(TIP_ID=TIP_ID))
-
         def unmark(self, TIP_ID):
             """https://developer.foursquare.com/docs/tips/unmark"""
             return self.POST('{TIP_ID}/unmark'.format(TIP_ID=TIP_ID))

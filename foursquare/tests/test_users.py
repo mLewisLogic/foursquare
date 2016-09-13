@@ -17,14 +17,6 @@ class UsersEndpointTestCase(BaseAuthenticatedEndpointTestCase):
         response = self.api.users()
         assert 'user' in response
 
-    def test_leaderboard(self):
-        response = self.api.users.leaderboard()
-        assert 'leaderboard' in response
-
-    def test_leaderboard_limit(self):
-        response = self.api.users.leaderboard(params={'neighbors': 5})
-        assert 'leaderboard' in response
-
     def test_search_twitter(self):
         response = self.api.users.search(params={'twitter': u'mLewisLogic'})
         assert 'results' in response
@@ -72,12 +64,16 @@ class UsersEndpointTestCase(BaseAuthenticatedEndpointTestCase):
         response = self.api.users.lists()
         assert 'lists' in response
 
-    def test_lists_friends(self):
-        response = self.api.users.lists(params={'group': u'friends'})
+    def test_lists_created(self):
+        response = self.api.users.lists(params={'group': u'created'})
         assert 'lists' in response
 
-    def test_lists_suggested(self):
-        response = self.api.users.lists(params={'group': u'suggested', 'll': self.default_geo})
+    def test_lists_followed(self):
+        response = self.api.users.lists(params={'group': u'followed'})
+        assert 'lists' in response
+
+    def test_lists_friends(self):
+        response = self.api.users.lists(params={'group': u'friends'})
         assert 'lists' in response
 
     def test_mayorships(self):
@@ -99,10 +95,6 @@ class UsersEndpointTestCase(BaseAuthenticatedEndpointTestCase):
     def test_tips(self):
         response = self.api.users.tips()
         assert 'tips' in response
-
-    def test_todos(self):
-        response = self.api.users.todos()
-        assert 'todos' in response
 
     def test_venuehistory(self):
         response = self.api.users.venuehistory()
