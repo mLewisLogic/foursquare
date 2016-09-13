@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
-# (c) 2016 Mike Lewis
+# (c) 2014 Mike Lewis
 
 from setuptools import setup, find_packages
 
@@ -11,6 +11,7 @@ setup(
     name='foursquare',
     version=version,
     author='Mike Lewis',
+    author_email='mlewis.mail@gmail.com',
     url='http://github.com/mLewisLogic/foursquare',
     description='easy-as-pie foursquare wrapper library',
     long_description=open('./README.txt', 'r').read(),
