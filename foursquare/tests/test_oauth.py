@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
-# (c) 2014 Mike Lewis
+# (c) 2016 Mike Lewis
 import logging; log = logging.getLogger(__name__)
 
 from . import BaseAuthenticationTestCase

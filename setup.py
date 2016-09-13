@@ -11,7 +11,7 @@ setup(
     name='foursquare',
     version=version,
     author='Mike Lewis',
-    author_email='mike@fondu.com',
+    author_email='mlewis.mail@gmail.com',
     url='http://github.com/mLewisLogic/foursquare',
     description='easy-as-pie foursquare wrapper library',
     long_description=open('./README.txt', 'r').read(),
