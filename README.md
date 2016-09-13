@@ -63,7 +63,7 @@ Redirect your user to the address *auth_uri* and let them authorize your app. Th
     client = foursquare.Foursquare(access_token='USER_ACCESS_TOKEN')
 
 
-#### [Specifing a specific API version](https://developer.foursquare.com/overview/versioning)
+#### [Specifying a specific API version](https://developer.foursquare.com/overview/versioning)
     client = foursquare.Foursquare(client_id='YOUR_CLIENT_ID', client_secret='YOUR_CLIENT_SECRET', version='20111215')
 or
 
@@ -208,12 +208,11 @@ In order to run the tests:
 
 
 ## Improvements
-What else would you like this library to do? Let me know. Feel free to send pull requests for any improvements you make.
+Feel free to send pull requests for any improvements you make.
 
 ### TODO
 * Bring in new endpoints as they emerge
 * Test coverage for write methods
-* Merchant-specific endpoints (someday)
 
 
 ## Code status
