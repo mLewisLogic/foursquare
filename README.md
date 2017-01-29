@@ -90,7 +90,7 @@ or
 ##### [Get details about a venue](https://developer.foursquare.com/docs/venues/venues)
     client.venues('40a55d80f964a52020f31ee3')
 ##### [Search for a coffee place](https://developer.foursquare.com/docs/venues/search)
-    client.venues.search(params={'query': 'coffee'})
+    client.venues.search(params={'query': 'coffee', 'near': 'Chicago'})
 ##### [Edit venue details](https://developer.foursquare.com/docs/venues/edit)
     client.venues.edit('40a55d80f964a52020f31ee3', params={'description': 'Best restaurant on the city'})
 
