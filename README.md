@@ -139,6 +139,7 @@ Note: endpoint methods map one-to-one with foursquare's endpoints
     venues.links()
     venues.listed()
     venues.menu()
+    venues.nextvenues()
     venues.photos()
     venues.similar()
     venues.stats()
