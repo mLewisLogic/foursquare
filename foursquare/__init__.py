@@ -728,7 +728,7 @@ class Foursquare(object):
                 params = {
                     'requests': ','.join(requests),
                 }
-                responses = self.GET(params=params)['responses']
+                responses = self.POST(data=params)['responses']
                 # ... and yield out each individual response
                 for response in responses:
                     # Make sure the response was valid
