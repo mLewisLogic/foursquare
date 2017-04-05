@@ -147,7 +147,7 @@ class Foursquare(object):
             """Gets the url a user needs to access to give up a user token"""
             params = {
                 'client_id': self.client_id,
-                'response_type': u'code',
+                'response_type': u'token',
                 'redirect_uri': self.redirect_uri,
             }
             return '{AUTH_ENDPOINT}?{params}'.format(
