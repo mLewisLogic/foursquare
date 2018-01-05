@@ -101,9 +101,6 @@ or
 #### Tips
 ##### [Get a specific tip](https://developer.foursquare.com/docs/tips/tips)
     client.tips('53deb1f6498e0d374af17ca7')
-##### [Search for a tip](https://developer.foursquare.com/docs/tips/search)
-    client.tips.search(params={'query': 'donuts'})
-
 
 ### Full endpoint list
 Note: endpoint methods map one-to-one with foursquare's endpoints
