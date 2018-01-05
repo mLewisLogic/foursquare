@@ -1,6 +1,6 @@
 # foursquare
 
-Python wrapper for the [foursquare API](http://developer.foursquare.com/docs/).
+Python wrapper for the [foursquare API](https://developer.foursquare.com/docs/).
 
 Philosophy:
 
@@ -56,14 +56,14 @@ Redirect your user to the address *auth_uri* and let them authorize your app. Th
     user = client.users()
 
 ### Instantiating a client
-#### [Userless Access](https://developer.foursquare.com/overview/auth)
+#### [Userless Access](https://developer.foursquare.com/docs/api/configuration/authentication)
     client = foursquare.Foursquare(client_id='YOUR_CLIENT_ID', client_secret='YOUR_CLIENT_SECRET')
 
-#### [Authenticated User Access](https://developer.foursquare.com/overview/auth) (when you already have a user's access_token)
+#### [Authenticated User Access](https://developer.foursquare.com/docs/api/configuration/authentication) (when you already have a user's access_token)
     client = foursquare.Foursquare(access_token='USER_ACCESS_TOKEN')
 
 
-#### [Specifying a specific API version](https://developer.foursquare.com/overview/versioning)
+#### [Specifying a specific API version](https://developer.foursquare.com/docs/api/configuration/versioning)
     client = foursquare.Foursquare(client_id='YOUR_CLIENT_ID', client_secret='YOUR_CLIENT_SECRET', version='20111215')
 or
 
@@ -73,37 +73,34 @@ or
 ### Examples
 
 #### Users
-##### [Getting your own user object](https://developer.foursquare.com/docs/users/users)
+##### [Getting your own user object](https://developer.foursquare.com/docs/api/users/details)
     client.users()
-##### [Getting another user](https://developer.foursquare.com/docs/users/users)
+##### [Getting another user](https://developer.foursquare.com/docs/api/users/details)
     client.users('1183247')
-##### [Get your checkins](https://developer.foursquare.com/docs/users/checkins)
+##### [Get your checkins](https://developer.foursquare.com/docs/api/users/checkins)
     client.users.checkins()
-##### [Get your most recent checkin](https://developer.foursquare.com/docs/users/checkins)
+##### [Get your most recent checkin](https://developer.foursquare.com/docs/api/users/checkins)
     client.users.checkins(params={'limit': 1})
 ##### Get *all* of your checkins (not a native 4sq call)
     client.users.all_checkins()
-##### [Approve a friend's friend request](https://developer.foursquare.com/docs/users/approve)
+##### [Approve a friend's friend request](https://developer.foursquare.com/docs/api/users/users-USER_ID-approve)
     client.users.approve('1183247')
 
 #### Venues
-##### [Get details about a venue](https://developer.foursquare.com/docs/venues/venues)
+##### [Get details about a venue](https://developer.foursquare.com/docs/api/venues/details)
     client.venues('40a55d80f964a52020f31ee3')
-##### [Search for a coffee place](https://developer.foursquare.com/docs/venues/search)
+##### [Search for a coffee place](https://developer.foursquare.com/docs/api/venues/search)
     client.venues.search(params={'query': 'coffee'})
-##### [Edit venue details](https://developer.foursquare.com/docs/venues/edit)
+##### [Edit venue details](https://developer.foursquare.com/docs/api/venues/proposededit)
     client.venues.edit('40a55d80f964a52020f31ee3', params={'description': 'Best restaurant on the city'})
 
 #### Checkins
-##### [Returns a list of recent checkins from friends](https://developer.foursquare.com/docs/checkins/recent)
+##### [Returns a list of recent checkins from friends](https://developer.foursquare.com/docs/api/checkins/recent)
     client.checkins.recent()
 
 #### Tips
-##### [Get a specific tip](https://developer.foursquare.com/docs/tips/tips)
+##### [Get a specific tip](https://developer.foursquare.com/docs/api/tips/details)
     client.tips('53deb1f6498e0d374af17ca7')
-##### [Search for a tip](https://developer.foursquare.com/docs/tips/search)
-    client.tips.search(params={'query': 'donuts'})
-
 
 ### Full endpoint list
 Note: endpoint methods map one-to-one with foursquare's endpoints
