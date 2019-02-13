@@ -107,16 +107,6 @@ class UsersEndpointTestCase(BaseAuthenticatedEndpointTestCase):
     """
     Actions
     """
-    def test_update_name(self):
-        # Change my name to Miguel
-        response = self.api.users.update(params={'firstName': 'Miguel'})
-        assert 'user' in response
-        assert response['user']['firstName'] == 'Miguel'
-        # Change it back
-        response = self.api.users.update(params={'firstName': 'Mike'})
-        assert 'user' in response
-        assert response['user']['firstName'] == 'Mike'
-
     def test_update_photo(self):
         test_photo = os.path.join(TEST_DATA_DIR, 'profile_photo.jpg')
         # Fail gracefully if we don't have a test photo on disk

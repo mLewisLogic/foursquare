@@ -16,6 +16,8 @@
 .Python
 pip-selfcheck.json
 
+.python-version
+
 # Ruby specific (for Travis)
 .rvmrc
 .ruby-gemset
