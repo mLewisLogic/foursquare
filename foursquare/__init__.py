@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
-# (c) 2016 Mike Lewis
+# (c) 2019 Mike Lewis
 import logging; log = logging.getLogger(__name__)
 
 # Try to load JSON libraries in this order:
@@ -53,7 +53,7 @@ if NETWORK_DEBUG:
 # Default API version. Move this forward as the library is maintained and kept current
 API_VERSION_YEAR  = '2019'
 API_VERSION_MONTH = '02'
-API_VERSION_DAY   = '12'
+API_VERSION_DAY   = '16'
 API_VERSION = '{year}{month}{day}'.format(year=API_VERSION_YEAR, month=API_VERSION_MONTH, day=API_VERSION_DAY)
 
 # Library versioning matches supported foursquare API version
