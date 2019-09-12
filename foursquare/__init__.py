@@ -52,8 +52,8 @@ if NETWORK_DEBUG:
 
 # Default API version. Move this forward as the library is maintained and kept current
 API_VERSION_YEAR  = '2019'
-API_VERSION_MONTH = '02'
-API_VERSION_DAY   = '16'
+API_VERSION_MONTH = '09'
+API_VERSION_DAY   = '11'
 API_VERSION = '{year}{month}{day}'.format(year=API_VERSION_YEAR, month=API_VERSION_MONTH, day=API_VERSION_DAY)
 
 # Library versioning matches supported foursquare API version
@@ -73,6 +73,9 @@ MAX_MULTI_REQUESTS = 5
 # Timeout for GET/POST requests
 GET_TIMEOUT = 60
 POST_TIMEOUT = 60
+
+# User-Agent
+USER_AGENT=u'https://pypi.org/project/foursquare/'
 
 # Change this if your Python distribution has issues with Foursquare's SSL cert
 VERIFY_SSL = True
@@ -278,7 +281,9 @@ class Foursquare(object):
 
         def _create_headers(self):
             """Get the headers we need"""
-            headers = {}
+            headers = {
+                'User-Agent': USER_AGENT,
+            }
             # If we specified a specific language, use that
             if self.lang:
                 headers['Accept-Language'] = self.lang
