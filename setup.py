@@ -13,7 +13,7 @@ setup(
     author='Mike Lewis',
     author_email='mlewis.mail@gmail.com',
     url='http://github.com/mLewisLogic/foursquare',
-    description='easy-as-pie foursquare wrapper library',
+    description='easy-as-pie foursquare API client',
     long_description=open('./README.txt', 'r').read(),
     download_url='http://github.com/mLewisLogic/foursquare/tarball/master',
     classifiers=[

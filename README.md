@@ -1,6 +1,6 @@
 # foursquare
 
-Python wrapper for the [foursquare API](https://developer.foursquare.com/docs/).
+Python client for the [foursquare API](https://developer.foursquare.com/docs/).
 
 Philosophy:
 
