@@ -3,6 +3,7 @@
 # (c) 2016 Mike Lewis
 
 import os
+import time
 import unittest
 
 import foursquare
@@ -35,6 +36,16 @@ class BaseEndpointTestCase(unittest.TestCase):
     default_eventid = u'4e173d2cbd412187aabb3c04'
     default_pageid = u'1070527'
 
+    def tearDown(self):
+        # If `FOURSQUARE_TEST_THROTTLE` is passed as an environmental
+        # variable, it will sleep for that many seconds at the end
+        # of every test. This is useful for the CI system to ensure
+        # that the test suite doesn't fail due to quota/rate-limiting
+        # on Foursquare's server-side.
+        if 'FOURSQUARE_TEST_THROTTLE' in os.environ:
+            time.sleep(int(os.environ['FOURSQUARE_TEST_THROTTLE']))
+
+
 class BaseAuthenticationTestCase(BaseEndpointTestCase):
     def setUp(self):
         self.api = foursquare.Foursquare(
@@ -46,8 +57,6 @@ class BaseAuthenticationTestCase(BaseEndpointTestCase):
 class BaseAuthenticatedEndpointTestCase(BaseEndpointTestCase):
     def setUp(self):
         self.api = foursquare.Foursquare(
-#            client_id=CLIENT_ID,
-#            client_secret=CLIENT_SECRET,
             access_token=ACCESS_TOKEN
         )
 
