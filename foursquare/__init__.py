@@ -70,11 +70,9 @@ NUM_REQUEST_RETRIES = 3
 # Max number of sub-requests per multi request
 MAX_MULTI_REQUESTS = 5
 
-# Timeout for GET requests
-GET_TIMEOUT = 2
-
-# Timeout for POST requests
-POST_TIMEOUT = 2
+# Timeout for GET/POST requests
+GET_TIMEOUT = 60
+POST_TIMEOUT = 60
 
 # Change this if your Python distribution has issues with Foursquare's SSL cert
 VERIFY_SSL = True
@@ -112,12 +110,29 @@ error_types = {
 class Foursquare(object):
     """foursquare V2 API wrapper"""
 
-    def __init__(self, client_id=None, client_secret=None, access_token=None, redirect_uri=None, version=None, lang=None):
+    def __init__(
+        self,
+        client_id=None,
+        client_secret=None,
+        access_token=None,
+        redirect_uri=None,
+        version=None,
+        lang=None,
+        get_timeout=GET_TIMEOUT,
+        post_timeout=POST_TIMEOUT
+    ):
         """Sets up the api object"""
         # Set up OAuth
         self.oauth = self.OAuth(client_id, client_secret, redirect_uri)
         # Set up endpoints
-        self.base_requester = self.Requester(client_id, client_secret, access_token, version, lang)
+        self.base_requester = self.Requester(
+            client_id,
+            client_secret,
+            access_token,
+            version,
+            lang,
+            get_timeout,
+            post_timeout)
         # Dynamically enable endpoints
         self._attach_endpoints()
 
@@ -178,13 +193,24 @@ class Foursquare(object):
 
     class Requester(object):
         """Api requesting object"""
-        def __init__(self, client_id=None, client_secret=None, access_token=None, version=None, lang=None):
+        def __init__(
+            self,
+            client_id=None,
+            client_secret=None,
+            access_token=None,
+            version=None,
+            lang=None,
+            get_timeout=GET_TIMEOUT,
+            post_timeout=POST_TIMEOUT
+        ):
             """Sets up the api object"""
             self.client_id = client_id
             self.client_secret = client_secret
             self.set_token(access_token)
             self.version = version if version else API_VERSION
             self.lang = lang
+            self.get_timeout = get_timeout
+            self.post_timeout = post_timeout
             self.multi_requests = list()
             self.rate_limit = None
             self.rate_remaining = None
@@ -207,7 +233,7 @@ class Foursquare(object):
                 API_ENDPOINT=API_ENDPOINT,
                 path=path
             )
-            result = _get(url, headers=headers, params=params)
+            result = _get(url, headers=headers, params=params, timeout=self.get_timeout)
             self.rate_limit = result['headers']['X-RateLimit-Limit']
             self.rate_remaining = result['headers']['X-RateLimit-Remaining']
             return result['data']['response']
@@ -234,7 +260,7 @@ class Foursquare(object):
                 API_ENDPOINT=API_ENDPOINT,
                 path=path
             )
-            result = _post(url, headers=headers, data=data, files=files)
+            result = _post(url, headers=headers, data=data, files=files, timeout=self.post_timeout)
             self.rate_limit = result['headers']['X-RateLimit-Limit']
             self.rate_remaining = result['headers']['X-RateLimit-Remaining']
             return result['data']['response']
@@ -754,14 +780,18 @@ def _log_and_raise_exception(msg, data, cls=FoursquareException):
 """
 Network helper functions
 """
-def _get(url, headers={}, params=None):
+def _get(url, headers={}, params=None, timeout=GET_TIMEOUT):
     """Tries to GET data from an endpoint using retries"""
     param_string = _foursquare_urlencode(params)
     for i in xrange(NUM_REQUEST_RETRIES):
         try:
             try:
-                response = requests.get(url, headers=headers, params=param_string, verify=VERIFY_SSL,
-                                        timeout=GET_TIMEOUT)
+                response = requests.get(
+                    url,
+                    headers=headers,
+                    params=param_string,
+                    verify=VERIFY_SSL,
+                    timeout=timeout)
                 return _process_response(response)
             except requests.exceptions.RequestException as e:
                 _log_and_raise_exception('Error connecting with foursquare API', e)
@@ -772,10 +802,16 @@ def _get(url, headers={}, params=None):
             if ((i + 1) == NUM_REQUEST_RETRIES): raise
         time.sleep(1)
 
-def _post(url, headers={}, data=None, files=None):
+def _post(url, headers={}, data=None, files=None, timeout=POST_TIMEOUT):
     """Tries to POST data to an endpoint"""
     try:
-        response = requests.post(url, headers=headers, data=data, files=files, verify=VERIFY_SSL, timeout=POST_TIMEOUT)
+        response = requests.post(
+            url,
+            headers=headers,
+            data=data,
+            files=files,
+            verify=VERIFY_SSL,
+            timeout=timeout)
         return _process_response(response)
     except requests.exceptions.RequestException as e:
         _log_and_raise_exception('Error connecting with foursquare API', e)
