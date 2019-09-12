@@ -202,7 +202,7 @@ In order to run the tests:
 * Copy `foursquare/tests/_creds.example.py` to `foursquare/tests/_creds.py`
 * Fill in your personal credentials to run the tests (`_creds.py` is in .gitignore)
 * Run `nosetests`
-  - If you are hitting quota or rate-limiting errors, try setting the `FOURSQUARE_TEST_THROTTLE` env variable to an integer like `3`. It will pause for this long after every test.
+  - If you are hitting quota or rate-limiting errors, try setting the `FOURSQUARE_TEST_THROTTLE` env variable to an integer like `3`. It will pause for this many seconds after every test.
 
 
 ## Improvements
