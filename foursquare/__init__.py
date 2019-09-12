@@ -70,6 +70,12 @@ NUM_REQUEST_RETRIES = 3
 # Max number of sub-requests per multi request
 MAX_MULTI_REQUESTS = 5
 
+# Timeout for GET requests
+GET_TIMEOUT = 2
+
+# Timeout for POST requests
+POST_TIMEOUT = 2
+
 # Change this if your Python distribution has issues with Foursquare's SSL cert
 VERIFY_SSL = True
 
@@ -722,7 +728,7 @@ class Foursquare(object):
                 params = {
                     'requests': ','.join(requests),
                 }
-                responses = self.GET(params=params)['responses']
+                responses = self.POST(data=params)['responses']
                 # ... and yield out each individual response
                 for response in responses:
                     # Make sure the response was valid
@@ -754,7 +760,8 @@ def _get(url, headers={}, params=None):
     for i in xrange(NUM_REQUEST_RETRIES):
         try:
             try:
-                response = requests.get(url, headers=headers, params=param_string, verify=VERIFY_SSL)
+                response = requests.get(url, headers=headers, params=param_string, verify=VERIFY_SSL,
+                                        timeout=GET_TIMEOUT)
                 return _process_response(response)
             except requests.exceptions.RequestException as e:
                 _log_and_raise_exception('Error connecting with foursquare API', e)
@@ -768,7 +775,7 @@ def _get(url, headers={}, params=None):
 def _post(url, headers={}, data=None, files=None):
     """Tries to POST data to an endpoint"""
     try:
-        response = requests.post(url, headers=headers, data=data, files=files, verify=VERIFY_SSL)
+        response = requests.post(url, headers=headers, data=data, files=files, verify=VERIFY_SSL, timeout=POST_TIMEOUT)
         return _process_response(response)
     except requests.exceptions.RequestException as e:
         _log_and_raise_exception('Error connecting with foursquare API', e)
