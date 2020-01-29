@@ -67,6 +67,9 @@ class VenuesEndpointTestCase(BaseAuthenticatedEndpointTestCase):
         response = self.api.venues.search(params={'ll': self.default_geo, 'radius': self.default_geo_radius, 'intent': 'browse'})
         assert 'venues' in response
 
+    def test_claim_venues(self):
+        response = self.api.venues.claim(self.default_venueid, params={"description": "Venue is Claimed"})
+        assert 'venues' in response
 
     def test_suggestcompletion(self):
         response = self.api.venues.suggestcompletion(params={'ll': self.default_geo, 'query': 'cof'})

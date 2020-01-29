@@ -512,6 +512,10 @@ class Foursquare(object):
             """https://developer.foursquare.com/docs/venues/flag"""
             return self.POST('{VENUE_ID}/flag'.format(VENUE_ID=VENUE_ID), params)
 
+        def claim(self, VENUE_ID, params):
+            """https://developer.foursquare.com/docs/api/venues/claim"""
+            return self.POST('{VENUE_ID}/claim'.format(VENUE_ID=VENUE_ID), params)
+
         def proposeedit(self, VENUE_ID, params):
             """https://developer.foursquare.com/docs/venues/proposeedit"""
             return self.POST('{VENUE_ID}/proposeedit'.format(VENUE_ID=VENUE_ID), params)
