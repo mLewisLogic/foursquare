@@ -48,8 +48,9 @@ class BaseEndpointTestCase(unittest.TestCase):
         # of every test. This is useful for the CI system to ensure
         # that the test suite doesn't fail due to quota/rate-limiting
         # on Foursquare's server-side.
-        if "FOURSQUARE_TEST_THROTTLE" in os.environ:
-            time.sleep(int(os.environ["FOURSQUARE_TEST_THROTTLE"]))
+        # The default value is 1 second.
+        throttle_delay = os.environ.get("FOURSQUARE_TEST_THROTTLE", 1)
+        time.sleep(int(throttle_delay))
 
 
 class BaseAuthenticationTestCase(BaseEndpointTestCase):
