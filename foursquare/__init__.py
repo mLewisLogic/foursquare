@@ -54,10 +54,10 @@ if NETWORK_DEBUG:
 
 
 # Default API version. Move this forward as the library is maintained and kept current
-API_VERSION_YEAR = "2019"
-API_VERSION_MONTH = "09"
-API_VERSION_DAY = "11"
-API_VERSION = "{year}{month}{day}".format(
+API_VERSION_YEAR = 2020
+API_VERSION_MONTH = 1
+API_VERSION_DAY = 30
+API_VERSION = "{year:04d}{month:02d}{day:02d}".format(
     year=API_VERSION_YEAR, month=API_VERSION_MONTH, day=API_VERSION_DAY
 )
 
