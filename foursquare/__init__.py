@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
-# (c) 2019 Mike Lewis
+# (c) 2020 Mike Lewis
 import logging; log = logging.getLogger(__name__)
 
 # Try to load JSON libraries in this order:

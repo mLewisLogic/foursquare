@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
-# (c) 2016 Mike Lewis
+# (c) 2020 Mike Lewis
 
 import os
 import time

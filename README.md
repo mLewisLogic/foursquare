@@ -218,4 +218,4 @@ Feel free to send pull requests for any improvements you make.
 
 ## License
 MIT License. See LICENSE
-Copyright (c) 2019 Mike Lewis
+Copyright (c) 2020 Mike Lewis
