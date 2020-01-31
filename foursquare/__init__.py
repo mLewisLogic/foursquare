@@ -363,10 +363,6 @@ class Foursquare(object):
         General
         """
 
-        def search(self, params, multi=False):
-            """https://developer.foursquare.com/docs/users/search"""
-            return self.GET("search", params, multi=multi)
-
         def requests(self, multi=False):
             """https://developer.foursquare.com/docs/users/requests"""
             return self.GET("requests", multi=multi)
@@ -398,12 +394,6 @@ class Foursquare(object):
                 ):
                     # Break once we've processed everything
                     break
-
-        def friends(self, USER_ID=u"self", params={}, multi=False):
-            """https://developer.foursquare.com/docs/users/friends"""
-            return self.GET(
-                "{USER_ID}/friends".format(USER_ID=USER_ID), params, multi=multi
-            )
 
         def lists(self, USER_ID=u"self", params={}, multi=False):
             """https://developer.foursquare.com/docs/users/lists"""

@@ -106,7 +106,6 @@ or
 Note: endpoint methods map one-to-one with foursquare's endpoints
 
     users()
-    users.search()
     users.requests()
     users.checkins()
     users.all_checkins() [*not a native endpoint*]

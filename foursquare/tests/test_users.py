@@ -19,14 +19,6 @@ class UsersEndpointTestCase(BaseAuthenticatedEndpointTestCase):
         response = self.api.users()
         assert "user" in response
 
-    def test_search_twitter(self):
-        response = self.api.users.search(params={"twitter": u"mLewisLogic"})
-        assert "results" in response
-
-    def test_search_name(self):
-        response = self.api.users.search(params={"name": u"Mike"})
-        assert "results" in response
-
     def test_requests(self):
         response = self.api.users.requests()
         assert "requests" in response
@@ -50,18 +42,6 @@ class UsersEndpointTestCase(BaseAuthenticatedEndpointTestCase):
     def test_all_checkins(self):
         checkins = list(self.api.users.all_checkins())
         assert isinstance(checkins, list)
-
-    def test_friends(self):
-        response = self.api.users.friends()
-        assert "friends" in response
-
-    def test_friends_limit(self):
-        response = self.api.users.friends(params={"limit": 10})
-        assert "friends" in response
-
-    def test_friends_offset(self):
-        response = self.api.users.friends(params={"offset": 3})
-        assert "friends" in response
 
     def test_lists(self):
         response = self.api.users.lists()
