@@ -210,6 +210,13 @@ Feel free to send pull requests for any improvements you make.
 ## Code status
 * [![Build Status](https://travis-ci.org/mLewisLogic/foursquare.png?branch=master)](https://travis-ci.org/mLewisLogic/foursquare)
 
+## Packaging
+```bash
+pip install twine wheel
+python setup.py sdist bdist_wheel
+twine upload dist/*
+```
+
 ## License
 MIT License. See LICENSE
 Copyright (c) 2020 Mike Lewis
