@@ -2,13 +2,13 @@
 # -*- coding: UTF-8 -*-
 # (c) 2020 Mike Lewis
 
-from setuptools import setup, find_packages
+import setuptools
 
 import foursquare
 
 version = str(foursquare.__version__)
 
-setup(
+setuptools.setup(
     name="foursquare",
     version=version,
     author="Mike Lewis",
@@ -26,8 +26,8 @@ setup(
         "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
         "License :: OSI Approved :: MIT License",
     ],
-    packages=find_packages(),
-    install_requires=["requests>=2.1", "six",],
+    packages=setuptools.find_packages(),
+    install_requires=["requests>=2.1", "six"],
     license="MIT License",
     keywords="foursquare api",
     include_package_data=True,

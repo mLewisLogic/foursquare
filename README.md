@@ -26,11 +26,6 @@ Dependencies:
 
     pip install foursquare
 
-or
-
-    easy_install foursquare
-
-Depending upon your system and virtualenv settings, these may require sudo permissions.
 
 [PyPi page](https://pypi.python.org/pypi/foursquare)
 
