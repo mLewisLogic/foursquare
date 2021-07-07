@@ -202,6 +202,12 @@ class Foursquare(object):
     def rate_remaining(self):
         """Returns the remaining rate limit for the last API call i.e. X-RateLimit-Remaining"""
         return self.base_requester.rate_remaining
+    
+    @property
+    def rate_reset(self):
+        """Returns a timestamp that corresponds to when the rate limits will reset"""
+        return self.base_requester.rate_reset
+        
 
     class OAuth(object):
         """Handles OAuth authentication procedures and helps retrieve tokens"""
@@ -261,6 +267,7 @@ class Foursquare(object):
             self.multi_requests = list()
             self.rate_limit = None
             self.rate_remaining = None
+            self.rate_reset = None
 
         def set_token(self, access_token):
             """Set the OAuth token for this requester"""
@@ -280,6 +287,7 @@ class Foursquare(object):
             result = _get(url, headers=headers, params=params, timeout=self.get_timeout)
             self.rate_limit = result["headers"]["X-RateLimit-Limit"]
             self.rate_remaining = result["headers"]["X-RateLimit-Remaining"]
+            self.rate_reset = result["headers"]["X-RateLimit-Reset"]
             return result["data"]["response"]
 
         def add_multi_request(self, path, params={}):
@@ -306,6 +314,7 @@ class Foursquare(object):
             )
             self.rate_limit = result["headers"]["X-RateLimit-Limit"]
             self.rate_remaining = result["headers"]["X-RateLimit-Remaining"]
+            self.rate_reset = result["headers"]["X-RateLimit-Reset"]
             return result["data"]["response"]
 
         def _enrich_params(self, params):
@@ -954,7 +963,11 @@ def _process_response(response):
     # Default case, Got proper response
     if response.status_code == 200:
         return {"headers": response.headers, "data": data}
-    return _raise_error_from_response(data)
+    # Rate limit exceeded, user must wait for quota to reset in order to retrieve data
+    elif response.status_code == 403:
+        return {"headers": response.headers, "data": data}
+    else:
+        return _raise_error_from_response(data)
 
 
 def _raise_error_from_response(data):
